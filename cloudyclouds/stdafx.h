@@ -4,6 +4,8 @@
 	#include <Windows.h>
 #endif
 
+#include <GL\glew.h>
+#define GLFW_NO_GLU
 #include <GL\glfw.h>
 
 #include <string>

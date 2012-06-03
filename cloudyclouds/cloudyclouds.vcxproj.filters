@@ -24,6 +24,15 @@
     <ClCompile Include="CloudyClouds.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Background.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ScreenAlignedTriangle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -33,6 +42,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Background.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ScreenAlignedTriangle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
