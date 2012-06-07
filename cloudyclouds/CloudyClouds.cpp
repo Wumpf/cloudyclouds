@@ -2,9 +2,11 @@
 #include "CloudyClouds.h"
 #include "Utils.h"
 #include "Clouds.h"
+#include "Camera.h"
 
 
-CloudyClouds::CloudyClouds()
+CloudyClouds::CloudyClouds() :
+	camera(new Camera())
 {
 	// some glfw properties
 	glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE, GL_TRUE);
@@ -48,19 +50,14 @@ CloudyClouds::CloudyClouds()
 	clouds.reset(new Clouds());
 
 	// matrix temp
-/*	cameraMatrix = Matrix4::camera(Vector3(0, 20, 20), Vector3(0.0f));
-	projectionMatrix = Matrix4::projectionPerspective(degToRad(80.0f), static_cast<float>(backBufferResolutionX) / backBufferResolutionY,
-														0.1f, 100.0f); */
 
 	// test with glu
 	glMatrixMode(GL_PROJECTION);
-	gluPerspective(80.0f, static_cast<float>(backBufferResolutionX) / backBufferResolutionY,
+	glLoadIdentity();
+	gluPerspective(45.0f, static_cast<float>(backBufferResolutionX) / backBufferResolutionY,
 														0.1f, 100.0f);
 	glGetFloatv(GL_PROJECTION_MATRIX, projectionMatrix);
 
-	glMatrixMode(GL_PROJECTION);
-	gluLookAt(0, 20, 0, 0, 0, 0, 0, 1, 0);
-	glGetFloatv(GL_PROJECTION_MATRIX, cameraMatrix);
 
 
 	// global matrices ubo
@@ -95,6 +92,9 @@ void CloudyClouds::mainLoop()
 
 bool CloudyClouds::update(float timeSinceLastFrame)
 {
+	glfwPollEvents();
+	camera->update(timeSinceLastFrame);
+
 	return true;
 }
 
@@ -102,8 +102,9 @@ bool CloudyClouds::display(float timeSinceLastFrame)
 {
 	// update global matrices
 	glBindBuffer(GL_UNIFORM_BUFFER, uboGlobalMatrices);
-	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * 4*4, sizeof(float) * 4 * 4, cameraMatrix);	// update view
-	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * 4*4 * 2, sizeof(float) * 4 * 4, cameraMatrix * projectionMatrix);	// update viewprojection
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(float) * 4 * 4, projectionMatrix);
+	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * 4*4, sizeof(float) * 4 * 4, camera->getViewMatrix());	// update view
+	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * 4*4 * 2, sizeof(float) * 4 * 4, camera->getViewMatrix() * projectionMatrix);	// update viewprojection
 
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboGlobalMatrices);
 
@@ -117,4 +118,3 @@ bool CloudyClouds::display(float timeSinceLastFrame)
 
 	return true;
 }
-

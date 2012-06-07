@@ -1,36 +1,11 @@
+#include "stdafx.h"
 #include "Vector3.h"
-#include <math.h>
-
 
 // definition of the "special values"
 const Vector3 Vector3::zero (0, 0, 0);
 const Vector3 Vector3::unitX(1, 0, 0);
 const Vector3 Vector3::unitY(0, 1, 0);
 const Vector3 Vector3::unitZ(0, 0, 1);
-
-inline const Vector3& Vector3::operator =  (const Vector3& v)
-{
-	x = v.x;
-	y = v.y;
-	z = v.z;
-	return *this;
-}
-
-inline const Vector3& Vector3::operator += (const Vector3& v)
-{
-	x += v.x;
-	y += v.y;
-	z += v.z;
-	return *this;
-}
-
-inline const Vector3& Vector3::operator -= (const Vector3& v)
-{
-	x -= v.x;
-	y -= v.y;
-	z -= v.z;
-	return *this;
-}
 
 inline const Vector3& Vector3::operator *= (const Vector3& v)
 {

@@ -14,11 +14,11 @@ layout(std140) uniform GlobalMatrices
 
 void main(void)
 {
-	gl_Position = ViewProjection * vec4(0, 0, 0, 1);
+	gl_Position = ViewProjection * vec4(-5, 0, -5, 1);
 	EmitVertex();
-	gl_Position = ViewProjection * vec4(10, 0, 0, 1);
+	gl_Position = ViewProjection * vec4(5, 0, -5, 1);
 	EmitVertex();
-	gl_Position = ViewProjection * vec4(0, 10, 0, 1);
+	gl_Position = ViewProjection * vec4(5, 0, 5, 1);
 	EmitVertex();
 	EndPrimitive();
 }

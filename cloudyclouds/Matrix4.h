@@ -45,12 +45,12 @@ public:
 	operator const float* () const		{ return static_cast<const float*>(n); }
 
 	// access operators
-	inline float* operator [] ( size_t iRow )
+	inline float* operator [] (size_t iRow)
     {
         assert( iRow < 4 );
         return m[iRow];
     }
-    inline const float *operator [] ( size_t iRow ) const
+    inline const float *operator [] (size_t iRow) const
     {
         assert( iRow < 4 );
         return m[iRow];
@@ -102,7 +102,7 @@ public:
 	}
 
 	// --- arithmetic operators ---
-	inline Matrix4 operator * (const Matrix4& m2)
+	inline Matrix4 operator * (const Matrix4& m2) const
 	{
 		Matrix4 r;
 		r.m[0][0] = m[0][0] * m2.m[0][0] + m[0][1] * m2.m[1][0] + m[0][2] * m2.m[2][0] + m[0][3] * m2.m[3][0];
@@ -154,22 +154,19 @@ public:
 	// --- static functions ---
 	
 	// generator functions
-	static Matrix4	identity()																		{ return Matrix4(1.0f, 0.0f, 0.0f, 0.0f,
-																														   0.0f, 1.0f, 0.0f, 0.0f,
-																														   0.0f, 0.0f, 1.0f, 0.0f,
-																														   0.0f, 0.0f, 0.0f, 1.0f); }		
-	static Matrix4	translation(const Vector3& v)													{ return Matrix4(1.0f, 0.0f, 0.0f, 0.0f,
-																														   0.0f, 1.0f, 0.0f, 0.0f,
-																														   0.0f, 0.0f, 1.0f, 0.0f,
-																														   v.x,  v.y,  v.z,  1.0f); }					
-	static Matrix4	scaling(const Vector3& v)														{ return Matrix4(v.x, 0.0f, 0.0f, 0.0f,
-																	   													   0.0f, v.y, 0.0f, 0.0f, 
-																	   													   0.0f, 0.0f, v.z, 0.0f, 
-																	  													   0.0f, 0.0f, 0.0f, 1.0f); }					
-	static Matrix4	fromAxes(const Vector3& vXAxis, const Vector3& vYAxis, const Vector3& vZAxis)		{ return Matrix4(vXAxis.x, vXAxis.y, vXAxis.z, 0.0f, 
-																														   vYAxis.x, vYAxis.y, vYAxis.z, 0.0f,
-																														   vZAxis.x, vZAxis.y, vZAxis.z, 0.0f,
-																														   0.0f,     0.0f,     0.0f,     1.0f); }		
+	static Matrix4 identity()								{ return Matrix4(1.0f, 0.0f, 0.0f, 0.0f,
+																			 0.0f, 1.0f, 0.0f, 0.0f,
+																		 	 0.0f, 0.0f, 1.0f, 0.0f,
+																		     0.0f, 0.0f, 0.0f, 1.0f); }
+	static Matrix4 translation(const Vector3& v)			{ return Matrix4(1.0f, 0.0f, 0.0f, v.x,
+																			 0.0f, 1.0f, 0.0f, v.y,
+																			 0.0f, 0.0f, 1.0f, v.z,
+																			 0.0f, 0.0f, 0.0f, 1.0f); }
+	static Matrix4 scaling(const Vector3& v)				{ return Matrix4(v.x, 0.0f, 0.0f, 0.0f,
+																	   		 0.0f, v.y, 0.0f, 0.0f, 
+																	   		 0.0f, 0.0f, v.z, 0.0f, 
+																	  		 0.0f, 0.0f, 0.0f, 1.0f); }
+
 	static Matrix4 projectionPerspective(float FOV, float aspect, float nearPlane, float farPlane);
 	//static Matrix4 projectionOrthogonal(float width, float height, float nearPlane, float farPlane);
 	static Matrix4 camera(const Vector3& vPos, const Vector3& vLockAt, const Vector3& vUp = Vector3(0.0f, 1.0f, 0.0f));

@@ -1,0 +1,44 @@
+#include "stdafx.h"
+#include "Camera.h"
+
+const float Camera::rotSpeed = 0.01f;
+const float Camera::moveSpeed = 16.0f;
+
+Camera::Camera() :
+	lastMousePosX(0),
+	lastMousePosY(0),
+	rotX(0.0f),
+	rotY(0.0f),
+	cameraPosition(2.f)
+{
+}
+
+Camera::~Camera()
+{
+}
+
+void Camera::update(float timeSinceLastFrame)
+{
+	int newMousePosX, newMousePosY;
+	glfwGetMousePos(&newMousePosX, &newMousePosY);
+
+	rotX += -rotSpeed * (newMousePosX - lastMousePosX);
+	rotY += rotSpeed * (newMousePosY - lastMousePosY);
+
+	float forward = (glfwGetKey(GLFW_KEY_UP) == GLFW_PRESS || glfwGetKey('w') == GLFW_PRESS) ? 1.0f : 0.0f;
+	float back	  = (glfwGetKey(GLFW_KEY_DOWN) == GLFW_PRESS || glfwGetKey('s') == GLFW_PRESS) ? 1.0f : 0.0f;
+
+	cameraDirection = Vector3(sinf(rotX) * cosf(rotY), sinf(rotY), cosf(rotX) * cosf(rotY));
+	cameraPosition += (forward - back) * cameraDirection * moveSpeed * timeSinceLastFrame;
+
+	//matrix = Matrix4::camera(cameraPosition, cameraPosition + cameraDirection);
+		
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluLookAt(cameraPosition.x, cameraPosition.y, cameraPosition.z, cameraPosition.x+cameraDirection.x, cameraPosition.y+cameraDirection.y, cameraPosition.z+cameraDirection.z, 0, 1, 0);
+	glGetFloatv(GL_PROJECTION_MATRIX, matrix);
+	
+
+	lastMousePosX = newMousePosX;
+	lastMousePosY = newMousePosY;
+}

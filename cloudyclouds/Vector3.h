@@ -45,9 +45,9 @@ public:
 	// --- operators ---
 
 	// assignment operators
-	inline const Vector3& operator =  (const Vector3& v);
-	inline const Vector3& operator += (const Vector3& v);
-	inline const Vector3& operator -= (const Vector3& v);
+	inline const Vector3& operator =  (const Vector3& v)	{ x = v.x; y = v.y; z = v.z; return *this;	}
+	inline const Vector3& operator += (const Vector3& v)	{ x += v.x; y += v.y; z += v.z; return *this;	}
+	inline const Vector3& operator -= (const Vector3& v)	{ x -= v.x; y -= v.y; z -= v.z; return *this;	}
 	inline const Vector3& operator *= (const Vector3& v);	// nonsense for real vectors.. but what about colors?
 	inline const Vector3& operator *= (float f);
 	inline const Vector3& operator /= (float f);
