@@ -36,13 +36,13 @@
     <ClCompile Include="ShaderObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CloudRendering.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Vektor3.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Matrix4.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Clouds.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -65,14 +65,28 @@
     <ClInclude Include="ShaderObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CloudRendering.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Matrix4.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Vector3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Clouds.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shader\cloudRendering.geom">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\cloudRendering.vert">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\cloudRendering.frag">
+      <Filter>Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

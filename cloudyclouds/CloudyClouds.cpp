@@ -1,21 +1,24 @@
 #include "stdafx.h"
 #include "CloudyClouds.h"
+#include "Utils.h"
+#include "Clouds.h"
 
 
 CloudyClouds::CloudyClouds()
 {
+	// some glfw properties
+	glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE, GL_TRUE);
+	glfwOpenWindowHint(GLFW_FSAA_SAMPLES, 0);
+	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);	// want opengl 3.3
+	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 3);
+	//glfwOpenWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+
+	// glfw init
 	if(glfwInit() != GL_TRUE)
 		throw std::exception("ERROR: glfwInit() failed!\n");
 
 	// setup window
 	// \todo xml config
-
-	// some properties
-	glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE, GL_TRUE);
-	glfwOpenWindowHint(GLFW_FSAA_SAMPLES, 0);
-	//glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);	// want opengl 3.3
-	//glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 3);
-
 	// resolution
 	backBufferResolutionX = 1024;
 	backBufferResolutionY = 768;
@@ -34,6 +37,22 @@ CloudyClouds::CloudyClouds()
 	if(glfwOpenWindow(backBufferResolutionX, backBufferResolutionY, 8, 8, 8, 0, 24, 0, GLFW_WINDOW) != GL_TRUE) // GLFW_FULLSCREEN
 		throw std::exception("ERROR: glfwOpenWindow() failed!\n");
 	glfwSetWindowTitle("CloudyClouds");
+
+	// glew init
+	GLenum err = glewInit();
+	if (GLEW_OK != err)
+		throw std::exception((std::string("ERROR: glewInit() failed!\n") + (char*)glewGetErrorString(err)).c_str());
+
+
+	// init cloud renderin
+	clouds.reset(new Clouds());
+
+	// matrix temp
+	cameraMatrix = Matrix4::camera(Vector3(0, 5, 5), Vector3(0.0f));
+	projectionMatrix = Matrix4::projectionPerspective(degToRad(80.0f), static_cast<float>(backBufferResolutionX) / backBufferResolutionY,
+														0.1f, 100.0f);
+
+
 }
 
 CloudyClouds::~CloudyClouds()
@@ -66,7 +85,11 @@ bool CloudyClouds::update(float timeSinceLastFrame)
 bool CloudyClouds::display(float timeSinceLastFrame)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	clouds->display(timeSinceLastFrame);
+
 	glfwSwapBuffers();
+
 	return true;
 }
 

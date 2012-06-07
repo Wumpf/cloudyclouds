@@ -26,7 +26,7 @@ Matrix4 Matrix4::projectionOrthogonal(float width, float height, float nearPlane
 
 }
 
-static Matrix4 camera(const Vector3& vPos, const Vector3& vLockAt, const Vector3& vUp = Vector3(0.0f, 1.0f, 0.0f))
+Matrix4 Matrix4::camera(const Vector3& vPos, const Vector3& vLockAt, const Vector3& vUp)
 {
 	// http://msdn.microsoft.com/en-us/library/windows/desktop/bb205342%28v=vs.85%29.aspx
 

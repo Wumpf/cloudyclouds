@@ -19,7 +19,7 @@ ShaderObject::ShaderObject(const std::string& vertexShaderFilename, const std::s
 		const char* sourcePtr = shaderSource.c_str();		
 		glShaderSource(vertexShader, 1, &sourcePtr, NULL);			// attach shader code
 		glCompileShader(vertexShader);								// compile
-		printShaderInfoLog(vertexShader);							// log output
+		printShaderInfoLog(vertexShader, vertexShaderFilename);							// log output
 	}
 
 	// fragment shader
@@ -30,7 +30,7 @@ ShaderObject::ShaderObject(const std::string& vertexShaderFilename, const std::s
 		const char* sourcePtr = shaderSource.c_str();		
 		glShaderSource(fragmentShader, 1, &sourcePtr, NULL);	// attach shader code
 		glCompileShader(fragmentShader);						// compile
-		printShaderInfoLog(fragmentShader);						// log output
+		printShaderInfoLog(fragmentShader, fragmentShaderFilename);						// log output
 	}
 
 	// geometry shader
@@ -41,7 +41,7 @@ ShaderObject::ShaderObject(const std::string& vertexShaderFilename, const std::s
 		const char* sourcePtr = shaderSource.c_str();		
 		glShaderSource(geometryShader, 1, &sourcePtr, NULL);// attach shader code
 		glCompileShader(geometryShader);					// compile
-		printShaderInfoLog(geometryShader);					// log output
+		printShaderInfoLog(geometryShader, geometryShaderFilename);					// log output
 	}
 
 	// Create shader program
@@ -92,7 +92,7 @@ std::string ShaderObject::readFile(std::string fileName)
 	return fileContent;
 }
 
-void ShaderObject::printShaderInfoLog(GLuint shader)
+void ShaderObject::printShaderInfoLog(GLuint shader, const std::string& shaderName)
 {
     GLint infologLength = 0;
     GLsizei charsWritten  = 0;
@@ -101,7 +101,7 @@ void ShaderObject::printShaderInfoLog(GLuint shader)
 	glGetShaderiv(shader, GL_INFO_LOG_LENGTH,&infologLength);		
 	infoLog = (char *)malloc(infologLength);
 	glGetShaderInfoLog(shader, infologLength, &charsWritten, infoLog);
-	printf("%s\n",infoLog);
+	Log::get() << shaderName << ":\n" << infoLog;
 	free(infoLog);
 }
 
@@ -115,6 +115,6 @@ void ShaderObject::printProgramInfoLog(GLuint program)
 	glGetProgramiv(program, GL_INFO_LOG_LENGTH,&infoLogLength);
 	infoLog = (char *)malloc(infoLogLength);
 	glGetProgramInfoLog(program, infoLogLength, &charsWritten, infoLog);
-	printf("%s\n",infoLog);
+	Log::get() << infoLog;
 	free(infoLog);
 }

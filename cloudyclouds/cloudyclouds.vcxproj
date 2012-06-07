@@ -81,7 +81,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Background.cpp" />
-    <ClCompile Include="CloudRendering.cpp" />
+    <ClCompile Include="Clouds.cpp" />
     <ClCompile Include="CloudyClouds.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Matrix4.cpp" />
@@ -97,14 +97,20 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Background.h" />
-    <ClInclude Include="CloudRendering.h" />
+    <ClInclude Include="Clouds.h" />
     <ClInclude Include="CloudyClouds.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="Matrix4.h" />
     <ClInclude Include="ScreenAlignedTriangle.h" />
     <ClInclude Include="ShaderObject.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Utils.h" />
     <ClInclude Include="Vector3.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shader\cloudRendering.frag" />
+    <None Include="Shader\cloudRendering.geom" />
+    <None Include="Shader\cloudRendering.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

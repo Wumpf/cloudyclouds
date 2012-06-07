@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Matrix4.h"
+#include <memory>
+
 // the program class
 class CloudyClouds
 {
@@ -15,4 +18,9 @@ private:
 
 	unsigned int backBufferResolutionX;
 	unsigned int backBufferResolutionY;
+
+	Matrix4 cameraMatrix;
+	Matrix4 projectionMatrix;
+
+	std::unique_ptr<class Clouds> clouds;
 };

@@ -13,5 +13,6 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <math.h>
 
 #include "Log.h"

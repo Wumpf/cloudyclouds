@@ -11,7 +11,7 @@ private:
 	/// reads a file and returns the content as a string
 	std::string readFile(std::string fileName);
 	// Print information about the compiling step
-	void ShaderObject::printShaderInfoLog(GLuint shader);
+	void ShaderObject::printShaderInfoLog(GLuint shader, const std::string& shaderName);
 	// Print information about the linking step
 	void ShaderObject::printProgramInfoLog(GLuint program);
 
