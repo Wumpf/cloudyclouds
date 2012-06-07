@@ -4,32 +4,41 @@
 
 ShaderObject::ShaderObject(const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename, const std::string& geometryShaderFilename) :
 	hasGeometryShader(geometryShaderFilename != ""),
+	hasFragmentShader(fragmentShaderFilename != ""),
+	hasVertexShader(vertexShaderFilename != ""),
+
 	vertexShaderOrigin(vertexShaderFilename),
 	fragmentShaderOrigin(fragmentShaderFilename),
 	geometryShaderOrigin(geometryShaderFilename)
 {
 	// vertex shader
-	vertexShader = glCreateShader(GL_VERTEX_SHADER);			// create object
-	std::string shaderSource = readFile(vertexShaderFilename);	// read file
-	const char* sourcePtr = shaderSource.c_str();		
-	glShaderSource(vertexShader, 1, &sourcePtr, NULL);			// attach shader code
-	glCompileShader(vertexShader);								// compile
-	printShaderInfoLog(vertexShader);							// log output
+	if(hasVertexShader)
+	{
+		vertexShader = glCreateShader(GL_VERTEX_SHADER);			// create object
+		std::string shaderSource = readFile(vertexShaderFilename);	// read file
+		const char* sourcePtr = shaderSource.c_str();		
+		glShaderSource(vertexShader, 1, &sourcePtr, NULL);			// attach shader code
+		glCompileShader(vertexShader);								// compile
+		printShaderInfoLog(vertexShader);							// log output
+	}
 
 	// fragment shader
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);	// create object
-	shaderSource = readFile(fragmentShaderFilename);		// read file
-	sourcePtr = shaderSource.c_str();		
-	glShaderSource(fragmentShader, 1, &sourcePtr, NULL);	// attach shader code
-	glCompileShader(fragmentShader);						// compile
-	printShaderInfoLog(fragmentShader);						// log output
+	if(hasFragmentShader)
+	{
+		fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);	// create object
+		std::string shaderSource = readFile(fragmentShaderFilename);		// read file
+		const char* sourcePtr = shaderSource.c_str();		
+		glShaderSource(fragmentShader, 1, &sourcePtr, NULL);	// attach shader code
+		glCompileShader(fragmentShader);						// compile
+		printShaderInfoLog(fragmentShader);						// log output
+	}
 
 	// geometry shader
 	if(hasGeometryShader)
 	{
 		geometryShader = glCreateShader(GL_GEOMETRY_SHADER);// create object
-		shaderSource = readFile(geometryShaderFilename);	// read file
-		sourcePtr = shaderSource.c_str();		
+		std::string shaderSource = readFile(geometryShaderFilename);	// read file
+		const char* sourcePtr = shaderSource.c_str();		
 		glShaderSource(geometryShader, 1, &sourcePtr, NULL);// attach shader code
 		glCompileShader(geometryShader);					// compile
 		printShaderInfoLog(geometryShader);					// log output
@@ -39,8 +48,10 @@ ShaderObject::ShaderObject(const std::string& vertexShaderFilename, const std::s
 	program = glCreateProgram();	
 
 	// Attach shader
-	glAttachShader(program, vertexShader);
-	glAttachShader(program, vertexShader);
+	if(hasVertexShader)
+		glAttachShader(program, vertexShader);
+	if(hasFragmentShader)
+		glAttachShader(program, fragmentShader);
 	if(hasGeometryShader)
 		glAttachShader(program, geometryShader);
 

@@ -39,13 +39,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>..\glfw\include;..\;$(IncludePath)</IncludePath>
-    <LibraryPath>..\glfw\lib-msvc100;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\dependencies\include;..\;$(IncludePath)</IncludePath>
+    <LibraryPath>..\dependencies\lib-msvc100;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>..\glfw\include;..\;$(IncludePath)</IncludePath>
-    <LibraryPath>..\glfw\lib-msvc100;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\dependencies\include;..\;$(IncludePath)</IncludePath>
+    <LibraryPath>..\dependencies\lib-msvc100;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -58,7 +58,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;glew32.lib;glfw.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -81,6 +81,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Background.cpp" />
+    <ClCompile Include="CloudRendering.cpp" />
     <ClCompile Include="CloudyClouds.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ScreenAlignedTriangle.cpp" />
@@ -92,6 +93,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Background.h" />
+    <ClInclude Include="CloudRendering.h" />
     <ClInclude Include="CloudyClouds.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="ScreenAlignedTriangle.h" />

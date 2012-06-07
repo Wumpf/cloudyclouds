@@ -18,6 +18,8 @@ private:
 
 
 	const bool hasGeometryShader;
+	const bool hasFragmentShader;
+	const bool hasVertexShader;
 
 	const std::string vertexShaderOrigin;
 	const std::string fragmentShaderOrigin;

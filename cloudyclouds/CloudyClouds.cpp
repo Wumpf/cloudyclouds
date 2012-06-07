@@ -13,28 +13,27 @@ CloudyClouds::CloudyClouds()
 	// some properties
 	glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE, GL_TRUE);
 	glfwOpenWindowHint(GLFW_FSAA_SAMPLES, 0);
-	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);	// want opengl 3.3
-	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 3);
-	 
+	//glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);	// want opengl 3.3
+	//glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 3);
 
 	// resolution
 	backBufferResolutionX = 1024;
 	backBufferResolutionY = 768;
+
 #if WIN32
 	// try systemres
-	HMONITOR hMonitor = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);//MONITOR_DEFAULTTONEAREST);
+	HMONITOR hMonitor = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);	//MONITOR_DEFAULTTONEAREST
 	MONITORINFO lpmi;
 	lpmi.cbSize = sizeof(lpmi);
 	GetMonitorInfo(hMonitor, &lpmi);
 	backBufferResolutionX = lpmi.rcMonitor.right;
 	backBufferResolutionY = lpmi.rcMonitor.bottom;
 #endif
-
+	
 	// open
-	if(glfwOpenWindow(backBufferResolutionX, backBufferResolutionY, 8, 8, 8, 0, 32, 0, GLFW_WINDOW) != GL_TRUE) // GLFW_FULLSCREEN
+	if(glfwOpenWindow(backBufferResolutionX, backBufferResolutionY, 8, 8, 8, 0, 24, 0, GLFW_WINDOW) != GL_TRUE) // GLFW_FULLSCREEN
 		throw std::exception("ERROR: glfwOpenWindow() failed!\n");
 	glfwSetWindowTitle("CloudyClouds");
-
 }
 
 CloudyClouds::~CloudyClouds()
