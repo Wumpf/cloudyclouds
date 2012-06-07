@@ -48,11 +48,16 @@ CloudyClouds::CloudyClouds()
 	clouds.reset(new Clouds());
 
 	// matrix temp
-	cameraMatrix = Matrix4::camera(Vector3(0, 5, 5), Vector3(0.0f));
+	cameraMatrix = Matrix4::camera(Vector3(0, 20, 20), Vector3(0.0f));
 	projectionMatrix = Matrix4::projectionPerspective(degToRad(80.0f), static_cast<float>(backBufferResolutionX) / backBufferResolutionY,
 														0.1f, 100.0f);
 
-
+	// global matrices ubo
+	glGenBuffers(1, &uboGlobalMatrices);
+	glBindBuffer(GL_UNIFORM_BUFFER, uboGlobalMatrices); 
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(float) * 4*4 * 3, NULL, GL_STREAM_DRAW);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(float) * 4 * 4, projectionMatrix);	// write projection
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboGlobalMatrices);	// bind to index 0 - its assumed that ubo-index0-binding will never change
 }
 
 CloudyClouds::~CloudyClouds()
@@ -84,10 +89,19 @@ bool CloudyClouds::update(float timeSinceLastFrame)
 
 bool CloudyClouds::display(float timeSinceLastFrame)
 {
+	// update global matrices
+	glBindBuffer(GL_UNIFORM_BUFFER, uboGlobalMatrices);
+	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * 4*4, sizeof(float) * 4 * 4, cameraMatrix);	// update view
+	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * 4*4 * 2, sizeof(float) * 4 * 4, cameraMatrix * projectionMatrix);	// update viewprojection
+
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboGlobalMatrices);
+
+	// clear scene
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	clouds->display(timeSinceLastFrame);
 
+	// next frame
 	glfwSwapBuffers();
 
 	return true;

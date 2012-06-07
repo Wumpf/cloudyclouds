@@ -88,5 +88,6 @@
     <None Include="Shader\cloudRendering.frag">
       <Filter>Shader</Filter>
     </None>
+    <None Include="uniform buffer bindings.txt" />
   </ItemGroup>
 </Project>

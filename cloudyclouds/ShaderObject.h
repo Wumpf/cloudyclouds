@@ -7,6 +7,9 @@ public:
 	ShaderObject(const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename, const std::string& geometryShaderFilename = "");
 	~ShaderObject();
 
+	GLuint getProgram() { return program; }
+	void useProgram()	{ glUseProgram(program); }
+
 private:
 	/// reads a file and returns the content as a string
 	std::string readFile(std::string fileName);
@@ -14,7 +17,6 @@ private:
 	void ShaderObject::printShaderInfoLog(GLuint shader, const std::string& shaderName);
 	// Print information about the linking step
 	void ShaderObject::printProgramInfoLog(GLuint program);
-
 
 
 	const bool hasGeometryShader;

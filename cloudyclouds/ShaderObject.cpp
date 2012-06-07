@@ -99,7 +99,7 @@ void ShaderObject::printShaderInfoLog(GLuint shader, const std::string& shaderNa
     char *infoLog;
 
 	glGetShaderiv(shader, GL_INFO_LOG_LENGTH,&infologLength);		
-	infoLog = (char *)malloc(infologLength);
+	infoLog = (char*)malloc(infologLength);
 	glGetShaderInfoLog(shader, infologLength, &charsWritten, infoLog);
 	Log::get() << shaderName << ":\n" << infoLog;
 	free(infoLog);

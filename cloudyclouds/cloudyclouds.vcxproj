@@ -111,6 +111,7 @@
     <None Include="Shader\cloudRendering.frag" />
     <None Include="Shader\cloudRendering.geom" />
     <None Include="Shader\cloudRendering.vert" />
+    <None Include="uniform buffer bindings.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
