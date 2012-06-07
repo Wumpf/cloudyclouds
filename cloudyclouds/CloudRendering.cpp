@@ -9,6 +9,10 @@ CloudRendering::CloudRendering() :
 }
 
 
-CloudRendering::~CloudRendering(void)
+CloudRendering::~CloudRendering()
+{
+}
+
+void CloudRendering::display(float timeSinceLastFrame)
 {
 }

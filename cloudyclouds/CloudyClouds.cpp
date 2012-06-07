@@ -69,3 +69,4 @@ bool CloudyClouds::display(float timeSinceLastFrame)
 	glfwSwapBuffers();
 	return true;
 }
+

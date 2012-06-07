@@ -84,11 +84,15 @@
     <ClCompile Include="CloudRendering.cpp" />
     <ClCompile Include="CloudyClouds.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Matrix4.cpp" />
     <ClCompile Include="ScreenAlignedTriangle.cpp" />
     <ClCompile Include="ShaderObject.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Vektor3.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -96,9 +100,11 @@
     <ClInclude Include="CloudRendering.h" />
     <ClInclude Include="CloudyClouds.h" />
     <ClInclude Include="Log.h" />
+    <ClInclude Include="Matrix4.h" />
     <ClInclude Include="ScreenAlignedTriangle.h" />
     <ClInclude Include="ShaderObject.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Vector3.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

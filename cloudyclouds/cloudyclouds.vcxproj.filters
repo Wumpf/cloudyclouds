@@ -39,6 +39,12 @@
     <ClCompile Include="CloudRendering.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Vektor3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Matrix4.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -60,6 +66,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CloudRendering.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrix4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
