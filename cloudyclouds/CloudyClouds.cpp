@@ -48,9 +48,20 @@ CloudyClouds::CloudyClouds()
 	clouds.reset(new Clouds());
 
 	// matrix temp
-	cameraMatrix = Matrix4::camera(Vector3(0, 20, 20), Vector3(0.0f));
+/*	cameraMatrix = Matrix4::camera(Vector3(0, 20, 20), Vector3(0.0f));
 	projectionMatrix = Matrix4::projectionPerspective(degToRad(80.0f), static_cast<float>(backBufferResolutionX) / backBufferResolutionY,
+														0.1f, 100.0f); */
+
+	// test with glu
+	glMatrixMode(GL_PROJECTION);
+	gluPerspective(80.0f, static_cast<float>(backBufferResolutionX) / backBufferResolutionY,
 														0.1f, 100.0f);
+	glGetFloatv(GL_PROJECTION_MATRIX, projectionMatrix);
+
+	glMatrixMode(GL_PROJECTION);
+	gluLookAt(0, 20, 0, 0, 0, 0, 0, 1, 0);
+	glGetFloatv(GL_PROJECTION_MATRIX, cameraMatrix);
+
 
 	// global matrices ubo
 	glGenBuffers(1, &uboGlobalMatrices);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vector3.h"
+#include <assert.h>
 
 class Matrix4;
 Matrix4 Matrix4Invert(const Matrix4& m);
@@ -43,8 +44,17 @@ public:
 	operator float* ()	 				{ return static_cast<float*>(n); }
 	operator const float* () const		{ return static_cast<const float*>(n); }
 
-	// Zugriffsoperatoren
-	const float& operator () (int iRow, int iColumn) const 	{return m[iRow - 1][iColumn - 1];}
+	// access operators
+	inline float* operator [] ( size_t iRow )
+    {
+        assert( iRow < 4 );
+        return m[iRow];
+    }
+    inline const float *operator [] ( size_t iRow ) const
+    {
+        assert( iRow < 4 );
+        return m[iRow];
+    }
 
 	// --- operators ---
 	
@@ -67,23 +77,9 @@ public:
 	}
 	const Matrix4& operator *= (const Matrix4& m)
 	{
-		return *this = Matrix4(m.m11 * m11 + m.m21 * m12 + m.m31 * m13 + m.m41 * m14,
-								m.m12 * m11 + m.m22 * m12 + m.m32 * m13 + m.m42 * m14,
-								m.m13 * m11 + m.m23 * m12 + m.m33 * m13 + m.m43 * m14,
-								m.m14 * m11 + m.m24 * m12 + m.m34 * m13 + m.m44 * m14,
-								m.m11 * m21 + m.m21 * m22 + m.m31 * m23 + m.m41 * m24,
-								m.m12 * m21 + m.m22 * m22 + m.m32 * m23 + m.m42 * m24,
-								m.m13 * m21 + m.m23 * m22 + m.m33 * m23 + m.m43 * m24,
-								m.m14 * m21 + m.m24 * m22 + m.m34 * m23 + m.m44 * m24,
-								m.m11 * m31 + m.m21 * m32 + m.m31 * m33 + m.m41 * m34,
-								m.m12 * m31 + m.m22 * m32 + m.m32 * m33 + m.m42 * m34,
-								m.m13 * m31 + m.m23 * m32 + m.m33 * m33 + m.m43 * m34,
-								m.m14 * m31 + m.m24 * m32 + m.m34 * m33 + m.m44 * m34,
-								m.m11 * m41 + m.m21 * m42 + m.m31 * m43 + m.m41 * m44,
-								m.m12 * m41 + m.m22 * m42 + m.m32 * m43 + m.m42 * m44,
-								m.m13 * m41 + m.m23 * m42 + m.m33 * m43 + m.m43 * m44,
-								m.m14 * m41 + m.m24 * m42 + m.m34 * m43 + m.m44 * m44);
+		return *this = *this * m;
 	}
+
 	const Matrix4& operator *= (float f)
 	{
 		m11 *= f; m12 *= f; m13 *= f; m14 *= f;
@@ -105,7 +101,35 @@ public:
 		return *this;
 	}
 
-	// --- comparision operators
+	// --- arithmetic operators ---
+	inline Matrix4 operator * (const Matrix4& m2)
+	{
+		Matrix4 r;
+		r.m[0][0] = m[0][0] * m2.m[0][0] + m[0][1] * m2.m[1][0] + m[0][2] * m2.m[2][0] + m[0][3] * m2.m[3][0];
+		r.m[0][1] = m[0][0] * m2.m[0][1] + m[0][1] * m2.m[1][1] + m[0][2] * m2.m[2][1] + m[0][3] * m2.m[3][1];
+		r.m[0][2] = m[0][0] * m2.m[0][2] + m[0][1] * m2.m[1][2] + m[0][2] * m2.m[2][2] + m[0][3] * m2.m[3][2];
+		r.m[0][3] = m[0][0] * m2.m[0][3] + m[0][1] * m2.m[1][3] + m[0][2] * m2.m[2][3] + m[0][3] * m2.m[3][3];
+
+		r.m[1][0] = m[1][0] * m2.m[0][0] + m[1][1] * m2.m[1][0] + m[1][2] * m2.m[2][0] + m[1][3] * m2.m[3][0];
+		r.m[1][1] = m[1][0] * m2.m[0][1] + m[1][1] * m2.m[1][1] + m[1][2] * m2.m[2][1] + m[1][3] * m2.m[3][1];
+		r.m[1][2] = m[1][0] * m2.m[0][2] + m[1][1] * m2.m[1][2] + m[1][2] * m2.m[2][2] + m[1][3] * m2.m[3][2];
+		r.m[1][3] = m[1][0] * m2.m[0][3] + m[1][1] * m2.m[1][3] + m[1][2] * m2.m[2][3] + m[1][3] * m2.m[3][3];
+
+		r.m[2][0] = m[2][0] * m2.m[0][0] + m[2][1] * m2.m[1][0] + m[2][2] * m2.m[2][0] + m[2][3] * m2.m[3][0];
+		r.m[2][1] = m[2][0] * m2.m[0][1] + m[2][1] * m2.m[1][1] + m[2][2] * m2.m[2][1] + m[2][3] * m2.m[3][1];
+		r.m[2][2] = m[2][0] * m2.m[0][2] + m[2][1] * m2.m[1][2] + m[2][2] * m2.m[2][2] + m[2][3] * m2.m[3][2];
+		r.m[2][3] = m[2][0] * m2.m[0][3] + m[2][1] * m2.m[1][3] + m[2][2] * m2.m[2][3] + m[2][3] * m2.m[3][3];
+
+		r.m[3][0] = m[3][0] * m2.m[0][0] + m[3][1] * m2.m[1][0] + m[3][2] * m2.m[2][0] + m[3][3] * m2.m[3][0];
+		r.m[3][1] = m[3][0] * m2.m[0][1] + m[3][1] * m2.m[1][1] + m[3][2] * m2.m[2][1] + m[3][3] * m2.m[3][1];
+		r.m[3][2] = m[3][0] * m2.m[0][2] + m[3][1] * m2.m[1][2] + m[3][2] * m2.m[2][2] + m[3][3] * m2.m[3][2];
+		r.m[3][3] = m[3][0] * m2.m[0][3] + m[3][1] * m2.m[1][3] + m[3][2] * m2.m[2][3] + m[3][3] * m2.m[3][3];
+
+		return r;
+	}
+
+
+	// --- comparision operators ---
     inline bool operator == ( const Matrix4& m2 ) const
     {
         if( 
@@ -147,7 +171,7 @@ public:
 																														   vZAxis.x, vZAxis.y, vZAxis.z, 0.0f,
 																														   0.0f,     0.0f,     0.0f,     1.0f); }		
 	static Matrix4 projectionPerspective(float FOV, float aspect, float nearPlane, float farPlane);
-	static Matrix4 projectionOrthogonal(float width, float height, float nearPlane, float farPlane);
+	//static Matrix4 projectionOrthogonal(float width, float height, float nearPlane, float farPlane);
 	static Matrix4 camera(const Vector3& vPos, const Vector3& vLockAt, const Vector3& vUp = Vector3(0.0f, 1.0f, 0.0f));
 	
 	// utils
@@ -164,27 +188,6 @@ public:
 inline Matrix4 operator + (const Matrix4& a, const Matrix4& b)	{ return Matrix4(a.m11 + b.m11, a.m12 + b.m12, a.m13 + b.m13, a.m14 + b.m14, a.m21 + b.m21, a.m22 + b.m22, a.m23 + b.m23, a.m24 + b.m24, a.m31 + b.m31, a.m32 + b.m32, a.m33 + b.m33, a.m34 + b.m34, a.m41 + b.m41, a.m42 + b.m42, a.m43 + b.m43, a.m44 + b.m44);}
 inline Matrix4 operator - (const Matrix4& a, const Matrix4& b)	{ return Matrix4(a.m11 - b.m11, a.m12 - b.m12, a.m13 - b.m13, a.m14 - b.m14, a.m21 - b.m21, a.m22 - b.m22, a.m23 - b.m23, a.m24 - b.m24, a.m31 - b.m31, a.m32 - b.m32, a.m33 - b.m33, a.m34 - b.m34, a.m41 - b.m41, a.m42 - b.m42, a.m43 - b.m43, a.m44 - b.m44);}
 inline Matrix4 operator - (const Matrix4& m)					{ return Matrix4(-m.m11, -m.m12, -m.m13, -m.m14, -m.m21, -m.m22, -m.m23, -m.m24, -m.m31, -m.m32, -m.m33, -m.m34, -m.m41, -m.m42, -m.m43, -m.m44);}
-
-inline Matrix4 operator * (const Matrix4& a,
-							const Matrix4& b)
-{
-	return Matrix4(b.m11 * a.m11 + b.m21 * a.m12 + b.m31 * a.m13 + b.m41 * a.m14,
-					b.m12 * a.m11 + b.m22 * a.m12 + b.m32 * a.m13 + b.m42 * a.m14,
-					b.m13 * a.m11 + b.m23 * a.m12 + b.m33 * a.m13 + b.m43 * a.m14,
-					b.m14 * a.m11 + b.m24 * a.m12 + b.m34 * a.m13 + b.m44 * a.m14,
-					b.m11 * a.m21 + b.m21 * a.m22 + b.m31 * a.m23 + b.m41 * a.m24,
-					b.m12 * a.m21 + b.m22 * a.m22 + b.m32 * a.m23 + b.m42 * a.m24,
-					b.m13 * a.m21 + b.m23 * a.m22 + b.m33 * a.m23 + b.m43 * a.m24,
-					b.m14 * a.m21 + b.m24 * a.m22 + b.m34 * a.m23 + b.m44 * a.m24,
-					b.m11 * a.m31 + b.m21 * a.m32 + b.m31 * a.m33 + b.m41 * a.m34,
-					b.m12 * a.m31 + b.m22 * a.m32 + b.m32 * a.m33 + b.m42 * a.m34,
-					b.m13 * a.m31 + b.m23 * a.m32 + b.m33 * a.m33 + b.m43 * a.m34,
-					b.m14 * a.m31 + b.m24 * a.m32 + b.m34 * a.m33 + b.m44 * a.m34,
-					b.m11 * a.m41 + b.m21 * a.m42 + b.m31 * a.m43 + b.m41 * a.m44,
-					b.m12 * a.m41 + b.m22 * a.m42 + b.m32 * a.m43 + b.m42 * a.m44,
-					b.m13 * a.m41 + b.m23 * a.m42 + b.m33 * a.m43 + b.m43 * a.m44,
-					b.m14 * a.m41 + b.m24 * a.m42 + b.m34 * a.m43 + b.m44 * a.m44);
-}
 
 inline const Matrix4 operator * (const Matrix4& m, float f)
 {

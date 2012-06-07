@@ -1,0 +1,7 @@
+Binding 0:
+layout(std140) uniform GlobalMatrices
+{
+	mat4 Projection;
+	mat4 View;
+	mat4 ViewProjection;
+};
