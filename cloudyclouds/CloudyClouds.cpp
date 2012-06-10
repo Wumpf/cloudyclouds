@@ -45,10 +45,6 @@ CloudyClouds::CloudyClouds() :
 	if (GLEW_OK != err)
 		throw std::exception((std::string("ERROR: glewInit() failed!\n") + (char*)glewGetErrorString(err)).c_str());
 
-
-	// init cloud renderin
-	clouds.reset(new Clouds());
-
 	// projection matrix
 	projectionMatrix = Matrix4::projectionPerspective(degToRad(45.0f), static_cast<float>(backBufferResolutionX) / backBufferResolutionY, 0.1f, 100.0f);
 
@@ -58,6 +54,10 @@ CloudyClouds::CloudyClouds() :
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(float) * 4*4 * 3, NULL, GL_STREAM_DRAW);
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(float) * 4 * 4, projectionMatrix);	// write projection
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboGlobalMatrices);	// bind to index 0 - its assumed that ubo-index0-binding will never change
+
+
+	// init cloud rendering
+	clouds.reset(new Clouds());
 }
 
 CloudyClouds::~CloudyClouds()

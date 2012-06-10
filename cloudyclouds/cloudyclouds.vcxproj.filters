@@ -51,6 +51,9 @@
     <ClCompile Include="Matrix4.cpp">
       <Filter>Math</Filter>
     </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">

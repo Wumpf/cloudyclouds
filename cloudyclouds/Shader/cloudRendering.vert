@@ -1,7 +1,16 @@
 #version 330
 
+// input
+struct Particle
+{
+	vec3 position;
+};
+in Particle vs_in;
+
+// output
+out Particle vs_out;
 
 void main()
 {	
-	gl_Position = vec4(0,0,0,0);
+	vs_out = vs_in;
 }

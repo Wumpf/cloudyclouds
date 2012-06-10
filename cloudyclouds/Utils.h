@@ -1,14 +1,11 @@
 #pragma once
 
-#define _USE_MATH_DEFINES
-#include <math.h>
+extern float degToRad(float degree);
+extern float radToDeg(float rad);
 
-float degToRad(float degree)
+template<class T> void swap(T& a, T& b)
 {
-	return static_cast<float>(degree * (M_PI / 360));
-}
-
-float radToDeg(float rad)
-{
-	return static_cast<float>(rad / (M_PI / 360));
+	T temp = b;
+	b = a;
+	a = temp;
 }
