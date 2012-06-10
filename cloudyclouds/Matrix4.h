@@ -158,10 +158,10 @@ public:
 																			 0.0f, 1.0f, 0.0f, 0.0f,
 																		 	 0.0f, 0.0f, 1.0f, 0.0f,
 																		     0.0f, 0.0f, 0.0f, 1.0f); }
-	static Matrix4 translation(const Vector3& v)			{ return Matrix4(1.0f, 0.0f, 0.0f, v.x,
-																			 0.0f, 1.0f, 0.0f, v.y,
-																			 0.0f, 0.0f, 1.0f, v.z,
-																			 0.0f, 0.0f, 0.0f, 1.0f); }
+	static Matrix4 translation(const Vector3& v)			{ return Matrix4(1.0f, 0.0f, 0.0f, 0.0f,
+																			 0.0f, 1.0f, 0.0f, 0.0f,
+																			 0.0f, 0.0f, 1.0f, 0.0f,
+																			 v.x,  v.y,  v.z, 1.0f); }
 	static Matrix4 scaling(const Vector3& v)				{ return Matrix4(v.x, 0.0f, 0.0f, 0.0f,
 																	   		 0.0f, v.y, 0.0f, 0.0f, 
 																	   		 0.0f, 0.0f, v.z, 0.0f, 
@@ -172,12 +172,12 @@ public:
 	static Matrix4 camera(const Vector3& vPos, const Vector3& vLockAt, const Vector3& vUp = Vector3(0.0f, 1.0f, 0.0f));
 	
 	// utils
-	const Matrix4 transpose(const Matrix4& m)
+	Matrix4 transpose() const
 	{
-		return Matrix4(m.m11, m.m21, m.m31, m.m41,
-						m.m12, m.m22, m.m32, m.m42,
-						m.m13, m.m23, m.m33, m.m43,
-						m.m14, m.m24, m.m34, m.m44);
+		return Matrix4(m11, m21, m31, m41,
+						m12, m22, m32, m42,
+						m13, m23, m33, m43,
+						m14, m24, m34, m44);
 	}
 };
 

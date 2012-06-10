@@ -49,16 +49,8 @@ CloudyClouds::CloudyClouds() :
 	// init cloud renderin
 	clouds.reset(new Clouds());
 
-	// matrix temp
-
-	// test with glu
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(45.0f, static_cast<float>(backBufferResolutionX) / backBufferResolutionY,
-														0.1f, 100.0f);
-	glGetFloatv(GL_PROJECTION_MATRIX, projectionMatrix);
-
-
+	// projection matrix
+	projectionMatrix = Matrix4::projectionPerspective(degToRad(45.0f), static_cast<float>(backBufferResolutionX) / backBufferResolutionY, 0.1f, 100.0f);
 
 	// global matrices ubo
 	glGenBuffers(1, &uboGlobalMatrices);

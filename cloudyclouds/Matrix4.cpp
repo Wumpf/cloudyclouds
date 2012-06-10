@@ -6,13 +6,13 @@
 Matrix4 Matrix4::projectionPerspective(float FOV, float aspect, float nearPlane, float farPlane)
 {
 	// http://wiki.delphigl.com/index.php/gluPerspective
-	float yScale = 1.0f / std::tan(FOV/2);
+	float yScale = 1.0f / std::tan(FOV);
 	float xScale = yScale / aspect;
 	float nearSubFar = nearPlane - farPlane;
 	return Matrix4(xScale,     0,          0,               0,
 					0,        yScale,       0,               0,
-					0,          0,       (farPlane+nearPlane)/nearSubFar, 2*nearPlane*farPlane/nearSubFar,
-					0,          0,       -1,     0);
+					0,          0,       (farPlane+nearPlane)/nearSubFar, -1,
+					0,          0,       2*nearPlane*farPlane/nearSubFar,     0);
 }
 /*
 Matrix4 Matrix4::projectionOrthogonal(float width, float height, float nearPlane, float farPlane)
@@ -28,13 +28,11 @@ Matrix4 Matrix4::projectionOrthogonal(float width, float height, float nearPlane
 
 Matrix4 Matrix4::camera(const Vector3& vPos, const Vector3& vLockAt, const Vector3& vUp)
 {
-	// http://msdn.microsoft.com/en-us/library/windows/desktop/bb205342%28v=vs.85%29.aspx , transposed, z negated
-
-	Vector3 zaxis = -(vLockAt - vPos).normalizeCpy();
-	Vector3 xaxis = Vector3::cross(vUp, zaxis).normalizeCpy();
-	Vector3 yaxis = Vector3::cross(zaxis, xaxis);
-    return Matrix4(	 xaxis.x,           xaxis.x,           xaxis.x,          -Vector3::dot(xaxis, vLockAt),
-					 yaxis.y,           yaxis.y,           yaxis.y,          -Vector3::dot(yaxis, vLockAt),
-					 zaxis.z,           zaxis.z,           zaxis.z,          -Vector3::dot(zaxis, vLockAt),
-					0,  0,  0,  1);
+	Vector3 zaxis = (vLockAt - vPos).normalizeCpy();
+	Vector3 xaxis = Vector3::cross(zaxis, vUp).normalizeCpy();
+	Vector3 yaxis = Vector3::cross(xaxis, zaxis);
+    return Matrix4(	 xaxis.x,           yaxis.x,          -zaxis.x,        0,
+					 xaxis.y,           yaxis.y,          -zaxis.y,        0,
+					 xaxis.z,           yaxis.z,          -zaxis.z,        0,
+					 -Vector3::dot(xaxis, vPos),  -Vector3::dot(yaxis, vPos),  -Vector3::dot(-zaxis, vPos),  1);
 }

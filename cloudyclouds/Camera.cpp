@@ -31,14 +31,8 @@ void Camera::update(float timeSinceLastFrame)
 	cameraDirection = Vector3(sinf(rotX) * cosf(rotY), sinf(rotY), cosf(rotX) * cosf(rotY));
 	cameraPosition += (forward - back) * cameraDirection * moveSpeed * timeSinceLastFrame;
 
-	//matrix = Matrix4::camera(cameraPosition, cameraPosition + cameraDirection);
-		
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluLookAt(cameraPosition.x, cameraPosition.y, cameraPosition.z, cameraPosition.x+cameraDirection.x, cameraPosition.y+cameraDirection.y, cameraPosition.z+cameraDirection.z, 0, 1, 0);
-	glGetFloatv(GL_PROJECTION_MATRIX, matrix);
+	matrix = Matrix4::camera(cameraPosition, cameraPosition + cameraDirection);
 	
-
 	lastMousePosX = newMousePosX;
 	lastMousePosY = newMousePosY;
 }
