@@ -6,11 +6,15 @@
 
 const unsigned int Clouds::maxNumCloudParticles = 65536;
 
-Clouds::Clouds() :
+Clouds::Clouds(unsigned int screenResolutionX, unsigned int screenResolutionY) :
 	renderingShader(new ShaderObject("Shader\\cloudRendering.vert", "Shader\\cloudRendering.frag", "Shader\\cloudRendering.geom"))
 {
-	GLuint blockIndex = glGetUniformBlockIndex(renderingShader->getProgram(), "GlobalMatrices"); 
-	glUniformBlockBinding(renderingShader->getProgram(), blockIndex, 0);	// Global Matrices binding=0
+	// 
+	GLuint blockIndex = glGetUniformBlockIndex(renderingShader->getProgram(), "Screen"); 
+	glUniformBlockBinding(renderingShader->getProgram(), blockIndex, 0);	// Screen binding=0
+	// 
+	blockIndex = glGetUniformBlockIndex(renderingShader->getProgram(), "View"); 
+	glUniformBlockBinding(renderingShader->getProgram(), blockIndex, 1);	// View binding=1
 
 	// generate buffers for cloud particles
 	const unsigned int bufferSize = maxNumCloudParticles * sizeof(float) * 3;

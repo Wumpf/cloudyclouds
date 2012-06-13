@@ -1,7 +1,14 @@
 Binding 0:
-layout(std140) uniform GlobalMatrices
+layout(std140) uniform Screen
 {
 	mat4 Projection;
+	vec2 inverseScreenResolution;
+};
+
+Binding 1:
+layout(std140) uniform View
+{
 	mat4 View;
 	mat4 ViewProjection;
+	vec3 CameraPosition;
 };

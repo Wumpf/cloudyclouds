@@ -19,9 +19,12 @@ private:
 	unsigned int backBufferResolutionX;
 	unsigned int backBufferResolutionY;
 	
-	// ubo for "GlobalMatrices"
-	GLuint uboGlobalMatrices;
-	Matrix4 projectionMatrix;
+
+	// global ubo
+	GLuint uboScreen;
+	GLuint uboView;
+
+	Matrix4 projectionMatrix;	
 
 	// cam
 	std::unique_ptr<class Camera> camera;

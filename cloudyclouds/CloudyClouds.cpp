@@ -48,16 +48,24 @@ CloudyClouds::CloudyClouds() :
 	// projection matrix
 	projectionMatrix = Matrix4::projectionPerspective(degToRad(45.0f), static_cast<float>(backBufferResolutionX) / backBufferResolutionY, 0.1f, 100.0f);
 
-	// global matrices ubo
-	glGenBuffers(1, &uboGlobalMatrices);
-	glBindBuffer(GL_UNIFORM_BUFFER, uboGlobalMatrices); 
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(float) * 4*4 * 3, NULL, GL_STREAM_DRAW);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(float) * 4 * 4, projectionMatrix);	// write projection
-	glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboGlobalMatrices);	// bind to index 0 - its assumed that ubo-index0-binding will never change
 
+	// global Screen ubo
+	glGenBuffers(1, &uboScreen);
+	glBindBuffer(GL_UNIFORM_BUFFER, uboScreen); 
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(float) * 4 * 5, NULL, GL_STREAM_DRAW);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(float) * 4 * 4, projectionMatrix);	// write projection
+	float inverseScreenResolution[] = { 1.0f/backBufferResolutionX, 1.0f/backBufferResolutionY };
+	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * 4 * 4, sizeof(float) * 2, inverseScreenResolution);	// write inverse screen
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboScreen);	// bind to index 0 - its assumed that ubo-index0-binding will never change
+	
+	// global View ubo
+	glGenBuffers(1, &uboView);
+	glBindBuffer(GL_UNIFORM_BUFFER, uboView); 
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(float) * 4 * 9, NULL, GL_STREAM_DRAW);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboView);	// bind to index 1 - its assumed that ubo-index1-binding will never change
 
 	// init cloud rendering
-	clouds.reset(new Clouds());
+	clouds.reset(new Clouds(backBufferResolutionX, backBufferResolutionY));
 }
 
 CloudyClouds::~CloudyClouds()
@@ -93,12 +101,18 @@ bool CloudyClouds::update(float timeSinceLastFrame)
 bool CloudyClouds::display(float timeSinceLastFrame)
 {
 	// update global matrices
-	glBindBuffer(GL_UNIFORM_BUFFER, uboGlobalMatrices);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(float) * 4 * 4, projectionMatrix);
-	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * 4*4, sizeof(float) * 4 * 4, camera->getViewMatrix());	// update view
-	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * 4*4 * 2, sizeof(float) * 4 * 4, camera->getViewMatrix() * projectionMatrix);	// update viewprojection
+	glBindBuffer(GL_UNIFORM_BUFFER, uboView);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(float) * 4 * 4, camera->getViewMatrix());	// update view
+	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * 4*4 , sizeof(float) * 4 * 4, camera->getViewMatrix() * projectionMatrix);	// update viewprojection
+	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * 4*4 *2, sizeof(float) * 3, camera->getPosition());
 
-	glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboGlobalMatrices);
+
+
+	glBindBuffer(GL_UNIFORM_BUFFER, uboScreen);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboScreen);
+
+	glBindBuffer(GL_UNIFORM_BUFFER, uboView);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboView);
 
 	// clear scene
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

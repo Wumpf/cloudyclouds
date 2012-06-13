@@ -5,7 +5,7 @@
 class Clouds
 {
 public:
-	Clouds();
+	Clouds(unsigned int screenResolutionX, unsigned int screenResolutionY);
 	~Clouds();
 
 	void display(float timeSinceLastFrame);

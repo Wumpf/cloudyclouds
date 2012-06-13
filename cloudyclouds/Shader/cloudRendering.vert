@@ -1,16 +1,16 @@
 #version 330
 
 // input
-struct Particle
-{
-	vec3 position;
-};
-in Particle vs_in;
+in vec3 vsin_position;
+in float vsin_size;
 
 // output
-out Particle vs_out;
+out vec3 vsout_position;
+out float vsout_size;
+
 
 void main()
 {	
-	vs_out = vs_in;
+	vsout_size = 2.0f;//vsin_position;
+	vsout_position = vsin_position;
 }

@@ -10,7 +10,8 @@ public:
 
 	void update(float frameTime);
 
-	const Matrix4& getViewMatrix() const { return matrix; }
+	const Matrix4& getViewMatrix() const	{ return matrix; }
+	const Vector3 getPosition() const		{ return cameraPosition; }
 
 private:
 	Matrix4 matrix;
