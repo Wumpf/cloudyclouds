@@ -4,6 +4,13 @@
 #include "Clouds.h"
 #include "Camera.h"
 
+bool quit = false;
+int onClose()
+{
+	quit = true;
+	return GL_TRUE;
+}
+
 
 CloudyClouds::CloudyClouds() :
 	camera(new Camera())
@@ -39,6 +46,7 @@ CloudyClouds::CloudyClouds() :
 	if(glfwOpenWindow(backBufferResolutionX, backBufferResolutionY, 8, 8, 8, 0, 24, 0, GLFW_WINDOW) != GL_TRUE) // GLFW_FULLSCREEN
 		throw std::exception("ERROR: glfwOpenWindow() failed!\n");
 	glfwSetWindowTitle("CloudyClouds");
+	glfwSetWindowCloseCallback(&onClose);
 
 	// glew init
 	GLenum err = glewInit();
@@ -49,7 +57,7 @@ CloudyClouds::CloudyClouds() :
 	projectionMatrix = Matrix4::projectionPerspective(degToRad(45.0f), static_cast<float>(backBufferResolutionX) / backBufferResolutionY, 0.1f, 100.0f);
 
 
-	// global Screen ubo
+	// Screen ubo
 	glGenBuffers(1, &uboScreen);
 	glBindBuffer(GL_UNIFORM_BUFFER, uboScreen); 
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(float) * 4 * 5, NULL, GL_STREAM_DRAW);
@@ -58,11 +66,17 @@ CloudyClouds::CloudyClouds() :
 	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * 4 * 4, sizeof(float) * 2, inverseScreenResolution);	// write inverse screen
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboScreen);	// bind to index 0 - its assumed that ubo-index0-binding will never change
 	
-	// global View ubo
+	// view ubo
 	glGenBuffers(1, &uboView);
 	glBindBuffer(GL_UNIFORM_BUFFER, uboView); 
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(float) * 4 * 9, NULL, GL_STREAM_DRAW);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboView);	// bind to index 1 - its assumed that ubo-index1-binding will never change
+
+	// timings ubo
+	glGenBuffers(1, &uboTimings);
+	glBindBuffer(GL_UNIFORM_BUFFER, uboTimings); 
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(float) * 2, NULL, GL_STREAM_DRAW);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 2, uboTimings);	// bind to index 1 - its assumed that ubo-index1-binding will never change
 
 	// init cloud rendering
 	clouds.reset(new Clouds(backBufferResolutionX, backBufferResolutionY));
@@ -70,13 +84,18 @@ CloudyClouds::CloudyClouds() :
 
 CloudyClouds::~CloudyClouds()
 {
+	glDeleteBuffers(1, &uboScreen);
+	glDeleteBuffers(1, &uboView);
+	glDeleteBuffers(1, &uboTimings);
+
+	glfwCloseWindow();
 	glfwTerminate();
 }
 
 void CloudyClouds::mainLoop()
 {
 	double oldTime = glfwGetTime();
-	while(true)
+	while(!quit)
 	{
 		double currentTime = glfwGetTime();
 		float frameTime = static_cast<float>(currentTime - oldTime);
@@ -106,13 +125,10 @@ bool CloudyClouds::display(float timeSinceLastFrame)
 	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * 4*4 , sizeof(float) * 4 * 4, camera->getViewMatrix() * projectionMatrix);	// update viewprojection
 	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * 4*4 *2, sizeof(float) * 3, camera->getPosition());
 
-
-
-	glBindBuffer(GL_UNIFORM_BUFFER, uboScreen);
-	glBindBufferBase(GL_UNIFORM_BUFFER, 0, uboScreen);
-
-	glBindBuffer(GL_UNIFORM_BUFFER, uboView);
-	glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboView);
+	// update timings
+	glBindBuffer(GL_UNIFORM_BUFFER, uboTimings);
+	float timings[2] = { static_cast<float>(glfwGetTime()), timeSinceLastFrame };
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(float) * 2, timings);	// update view
 
 	// clear scene
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

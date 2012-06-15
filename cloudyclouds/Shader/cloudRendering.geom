@@ -21,16 +21,17 @@ layout(std140) uniform View
 };
 
 // input
-in vec3 vsout_position[1];
-in vec3 vsout_size[1];
+in vec3 vs_out_position[1];
+in float vs_out_size[1];
+in float vs_out_remainingLifeTime[1];
 
 // output
 
 
-
-void main(void)
+void main()
 {
-	vec4 pos = vec4(0.0, 0.0, 0.0, 1.0);
+	
+	// cullling
 
 	// gen view aligned quad
 		// http://www.flipcode.com/archives/Billboarding-Excerpt_From_iReal-Time_Renderingi_2E.shtml
@@ -52,8 +53,8 @@ void main(void)
 	gl_Position = ViewProjection * gl_Position;
 	EmitVertex();*/
 		// use fast clipspace variant
-	vec4 clipCordinate = ViewProjection * vec4(0.0, 1.0, 0.0, 1.0);
-	vec2 sizeClipSpace = 1000 * inverseScreenResolution;
+	vec4 clipCordinate = ViewProjection * vec4(vs_out_position[0], 1.0);
+	vec2 sizeClipSpace = vs_out_size[0] * inverseScreenResolution;
 	gl_Position = clipCordinate;
 	gl_Position.xy -= sizeClipSpace;
 	EmitVertex();

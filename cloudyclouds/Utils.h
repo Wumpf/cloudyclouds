@@ -9,3 +9,5 @@ template<class T> void swap(T& a, T& b)
 	b = a;
 	a = temp;
 }
+
+bool checkGLError(const char* Title);

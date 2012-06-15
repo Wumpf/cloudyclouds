@@ -4,7 +4,8 @@
 class ShaderObject
 {
 public:
-	ShaderObject(const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename, const std::string& geometryShaderFilename = "");
+	ShaderObject(const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename, const std::string& geometryShaderFilename = "", 
+						const GLchar** transformFeedbackVaryings = nullptr, unsigned int numTransformFeedbackVaryings = 0, bool interleavedTransformFeedbackAttribs = true);
 	~ShaderObject();
 
 	GLuint getProgram() { return program; }

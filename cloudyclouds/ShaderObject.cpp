@@ -2,7 +2,8 @@
 #include "ShaderObject.h"
 
 
-ShaderObject::ShaderObject(const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename, const std::string& geometryShaderFilename) :
+ShaderObject::ShaderObject(const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename, const std::string& geometryShaderFilename, 
+													const GLchar** transformFeedbackVaryings, unsigned int numTransformFeedbackVaryings, bool interleavedTransformFeedbackAttribs) :
 	hasGeometryShader(geometryShaderFilename != ""),
 	hasFragmentShader(fragmentShaderFilename != ""),
 	hasVertexShader(vertexShaderFilename != ""),
@@ -54,6 +55,13 @@ ShaderObject::ShaderObject(const std::string& vertexShaderFilename, const std::s
 		glAttachShader(program, fragmentShader);
 	if(hasGeometryShader)
 		glAttachShader(program, geometryShader);
+
+	// transform feedback
+	if(transformFeedbackVaryings && numTransformFeedbackVaryings > 0)
+	{
+		glTransformFeedbackVaryings(program, numTransformFeedbackVaryings, transformFeedbackVaryings,
+										interleavedTransformFeedbackAttribs ? GL_INTERLEAVED_ATTRIBS : GL_SEPARATE_ATTRIBS); 
+	}          
 
 	// Link program
 	glLinkProgram(program);

@@ -12,3 +12,10 @@ layout(std140) uniform View
 	mat4 ViewProjection;
 	vec3 CameraPosition;
 };
+
+Binding 2:
+layout(std140) uniform Timings
+{
+	float totalTime;
+	float frameTimeDelta;
+}

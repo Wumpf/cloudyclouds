@@ -11,12 +11,17 @@ public:
 	void display(float timeSinceLastFrame);
 
 private:
+	std::unique_ptr<class ShaderObject> moveShader;
 	std::unique_ptr<class ShaderObject> renderingShader;
 
-	// vbo with cloud particle data
-	GLuint cloudParticleBuffer_Read;
-	GLuint cloudParticleBuffer_Write;
+	// cloud particle data
+	GLuint vbo_cloudParticleBuffer_Read;
+	GLuint vbo_cloudParticleBuffer_Write;
+	
+	GLuint vao_cloudParticleBuffer_Read;
+	GLuint vao_cloudParticleBuffer_Write;
 
+	static const char* transformFeedbackVaryings[];
 
 	static const unsigned int maxNumCloudParticles;
 };

@@ -20,9 +20,10 @@ private:
 	unsigned int backBufferResolutionY;
 	
 
-	// global ubo
+	// global ubos
 	GLuint uboScreen;
 	GLuint uboView;
+	GLuint uboTimings;
 
 	Matrix4 projectionMatrix;	
 

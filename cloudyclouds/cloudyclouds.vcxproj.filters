@@ -94,12 +94,15 @@
     <None Include="Shader\cloudRendering.geom">
       <Filter>Shader</Filter>
     </None>
-    <None Include="Shader\cloudRendering.vert">
-      <Filter>Shader</Filter>
-    </None>
     <None Include="Shader\cloudRendering.frag">
       <Filter>Shader</Filter>
     </None>
     <None Include="uniform buffer bindings.txt" />
+    <None Include="Shader\cloudMove.geom">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\cloudPassThrough.vert">
+      <Filter>Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>
