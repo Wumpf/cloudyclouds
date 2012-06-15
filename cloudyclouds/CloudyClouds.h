@@ -13,6 +13,8 @@ public:
 	void mainLoop();
 
 private:
+	void InitUBOs();
+
 	bool update(float timeSinceLastFrame);
 	bool display(float timeSinceLastFrame);
 

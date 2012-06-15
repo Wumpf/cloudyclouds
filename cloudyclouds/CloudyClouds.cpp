@@ -4,6 +4,8 @@
 #include "Clouds.h"
 #include "Camera.h"
 
+#include <iomanip>
+
 bool quit = false;
 int onClose()
 {
@@ -45,7 +47,6 @@ CloudyClouds::CloudyClouds() :
 	// open
 	if(glfwOpenWindow(backBufferResolutionX, backBufferResolutionY, 8, 8, 8, 0, 24, 0, GLFW_WINDOW) != GL_TRUE) // GLFW_FULLSCREEN
 		throw std::exception("ERROR: glfwOpenWindow() failed!\n");
-	glfwSetWindowTitle("CloudyClouds");
 	glfwSetWindowCloseCallback(&onClose);
 
 	// glew init
@@ -54,9 +55,30 @@ CloudyClouds::CloudyClouds() :
 		throw std::exception((std::string("ERROR: glewInit() failed!\n") + (char*)glewGetErrorString(err)).c_str());
 
 	// projection matrix
-	projectionMatrix = Matrix4::projectionPerspective(degToRad(45.0f), static_cast<float>(backBufferResolutionX) / backBufferResolutionY, 0.1f, 100.0f);
+	projectionMatrix = Matrix4::projectionPerspective(degToRad(45.0f), static_cast<float>(backBufferResolutionX) / backBufferResolutionY, 0.1f, 2000.0f);
 
+	// uniform buffers
+	InitUBOs();
 
+	// init cloud rendering
+	clouds.reset(new Clouds(backBufferResolutionX, backBufferResolutionY));
+
+	// start position
+	camera->setPosition(Vector3(0,50,0));
+}
+
+CloudyClouds::~CloudyClouds()
+{
+	glDeleteBuffers(1, &uboScreen);
+	glDeleteBuffers(1, &uboView);
+	glDeleteBuffers(1, &uboTimings);
+
+	glfwCloseWindow();
+	glfwTerminate();
+}
+
+void CloudyClouds::InitUBOs()
+{
 	// Screen ubo
 	glGenBuffers(1, &uboScreen);
 	glBindBuffer(GL_UNIFORM_BUFFER, uboScreen); 
@@ -77,19 +99,6 @@ CloudyClouds::CloudyClouds() :
 	glBindBuffer(GL_UNIFORM_BUFFER, uboTimings); 
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(float) * 2, NULL, GL_STREAM_DRAW);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 2, uboTimings);	// bind to index 1 - its assumed that ubo-index1-binding will never change
-
-	// init cloud rendering
-	clouds.reset(new Clouds(backBufferResolutionX, backBufferResolutionY));
-}
-
-CloudyClouds::~CloudyClouds()
-{
-	glDeleteBuffers(1, &uboScreen);
-	glDeleteBuffers(1, &uboView);
-	glDeleteBuffers(1, &uboTimings);
-
-	glfwCloseWindow();
-	glfwTerminate();
 }
 
 void CloudyClouds::mainLoop()
@@ -113,6 +122,11 @@ bool CloudyClouds::update(float timeSinceLastFrame)
 {
 	glfwPollEvents();
 	camera->update(timeSinceLastFrame);
+
+	// show fps in titel
+	std::stringstream stringstream;
+	stringstream << "CloudyClouds " << "FPS: " << std::setprecision(4) << 1.0f / timeSinceLastFrame << " ms: " << timeSinceLastFrame* 1000.0f;
+	glfwSetWindowTitle(stringstream.str().c_str());
 
 	return true;
 }

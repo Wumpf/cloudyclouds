@@ -11,3 +11,5 @@ template<class T> void swap(T& a, T& b)
 }
 
 bool checkGLError(const char* Title);
+
+float random(float min = 0.0f, float max = 1.0f);

@@ -4,8 +4,8 @@
 #include "Utils.h"
 #include "Vector3.h"
 
-const unsigned int Clouds::maxNumCloudParticles = 100;
 const char* Clouds::transformFeedbackVaryings[] = { "gs_out_position", "gs_out_size", "gs_out_remainingLifeTime" };
+const unsigned int Clouds::maxNumCloudParticles = 16384;
 
 // struct representation of a particle vertex
 struct ParticleVertex
@@ -37,18 +37,30 @@ Clouds::Clouds(unsigned int screenResolutionX, unsigned int screenResolutionY) :
 	blockIndex = glGetUniformBlockIndex(renderingShader->getProgram(), "View"); 
 	glUniformBlockBinding(renderingShader->getProgram(), blockIndex, 1);	// View binding=1
 
-	// generate vbo for cloud particles (2 for ping/pong)
+
+	// vbo
+		// init with random lifetimes as seed
+	std::unique_ptr<ParticleVertex[]> startParticles(new ParticleVertex[maxNumCloudParticles]);
+	for(int i=0; i<maxNumCloudParticles; ++i)
+		startParticles[i].lifetime = random();
+
+	glGenBuffers(1, &vbo_cloudParticleBuffer_Read);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_cloudParticleBuffer_Read);
+		glBufferData(GL_ARRAY_BUFFER, maxNumCloudParticles * sizeof(ParticleVertex), startParticles.get(), GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	checkGLError("cloudVBO1");
+
+	glGenBuffers(1, &vbo_cloudParticleBuffer_Write);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_cloudParticleBuffer_Write);
+		glBufferData(GL_ARRAY_BUFFER, maxNumCloudParticles * sizeof(ParticleVertex), nullptr, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	checkGLError("cloudVBO2");
+
+	// generate vao for cloud particles (2 for ping/pong)
 	GLuint* vbo[] = { &vbo_cloudParticleBuffer_Read, &vbo_cloudParticleBuffer_Write };
 	GLuint* vao[] = { &vao_cloudParticleBuffer_Read, &vao_cloudParticleBuffer_Write };
 	for(int i=0; i<2; ++i)
-	{
-		// vbo
-		int asdf = sizeof(ParticleVertex);
-		glGenBuffers(1, vbo[i]);
-		glBindBuffer(GL_ARRAY_BUFFER, *vbo[i]);
-			glBufferData(GL_ARRAY_BUFFER, maxNumCloudParticles * sizeof(ParticleVertex), NULL, GL_STATIC_DRAW);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		checkGLError("cloudVBO");
+	{ 
 
 		// vao
 		glGenVertexArrays(1, vao[i]);
@@ -85,10 +97,6 @@ void Clouds::display(float timeSinceLastFrame)
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_cloudParticleBuffer_Write);
 	float a = 1000;
 	glBufferSubData(GL_ARRAY_BUFFER, sizeof(float)*3, sizeof(float), &a);*/
-	
-	// rotate read/write buffer
-	swap(vao_cloudParticleBuffer_Read, vao_cloudParticleBuffer_Write);
-	swap(vbo_cloudParticleBuffer_Read, vbo_cloudParticleBuffer_Write);
 
 	// move clouds
 	glEnable(GL_RASTERIZER_DISCARD); 
@@ -112,4 +120,8 @@ void Clouds::display(float timeSinceLastFrame)
 	renderingShader->useProgram();
 	glDrawArrays(GL_POINTS, 0, maxNumCloudParticles);
 	glBindVertexArray(0);
+
+	// rotate read/write buffer
+	swap(vao_cloudParticleBuffer_Read, vao_cloudParticleBuffer_Write);
+	swap(vbo_cloudParticleBuffer_Read, vbo_cloudParticleBuffer_Write);
 }

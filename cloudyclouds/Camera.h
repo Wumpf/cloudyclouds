@@ -10,6 +10,8 @@ public:
 
 	void update(float frameTime);
 
+	void setPosition(const Vector3& pos) 	{ cameraPosition = pos; }
+
 	const Matrix4& getViewMatrix() const	{ return matrix; }
 	const Vector3 getPosition() const		{ return cameraPosition; }
 

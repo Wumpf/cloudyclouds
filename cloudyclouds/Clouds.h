@@ -17,12 +17,10 @@ private:
 	// cloud particle data
 	GLuint vbo_cloudParticleBuffer_Read;
 	GLuint vbo_cloudParticleBuffer_Write;
-	
 	GLuint vao_cloudParticleBuffer_Read;
 	GLuint vao_cloudParticleBuffer_Write;
 
 	static const char* transformFeedbackVaryings[];
-
 	static const unsigned int maxNumCloudParticles;
 };
 

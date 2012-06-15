@@ -45,3 +45,8 @@ bool checkGLError(const char* Title)
 	}
 	return Error == GL_NO_ERROR;
 }
+
+float random(float min, float max)
+{
+	return min + static_cast<float>(rand()) / RAND_MAX * (max - min);
+}
