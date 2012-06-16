@@ -14,8 +14,11 @@ layout(std140) uniform Timings
 // constants
 const vec3 spawnareaMin = vec3(-100, -10, -100);
 const vec3 spawnareaSpan = vec3(200, 20, 200);
-const float lifeTimeMin = 0.5;
-const float lifeTimeSpan = 5.0;
+const float lifeTimeMin = 1.0;
+const float lifeTimeSpan = 10.0;
+const float growthFactor = 5000; 
+const float windFactor = 1.5;
+const float thermicFactor = 0.5; 
 
 
 // input
@@ -47,15 +50,21 @@ void main()
 	// spawn new particle
 	if(gs_out_remainingLifeTime < 0.0f)
 	{
-		uint seed = uint(totalTime * 1000.0) + uint(gl_PrimitiveIDIn);
-		gs_out_position = spawnareaMin + vec3(randhash(seed, spawnareaSpan.x), randhash(seed++, spawnareaSpan.y), randhash(seed++, spawnareaSpan.z));
-		gs_out_remainingLifeTime = lifeTimeMin + randhash(seed++, lifeTimeSpan);
+		uint seed = uint(totalTime * 10000.0) + uint(gl_PrimitiveIDIn);
+		gs_out_position = spawnareaMin + vec3(randhash(seed, spawnareaSpan.x), randhash(++seed, spawnareaSpan.y), randhash(++seed, spawnareaSpan.z));
+		gs_out_remainingLifeTime = lifeTimeMin + randhash(++seed, lifeTimeSpan);
+		gs_out_size = 0;
 	}
 	else
+	{
 		gs_out_position = vs_out_position[0];
+		gs_out_position.x -= frameTimeDelta * windFactor;
+		gs_out_position.y += frameTimeDelta * thermicFactor;
 
 
-	gs_out_size = 1000;
+		gs_out_size = vs_out_size[0] + frameTimeDelta * growthFactor / min(80, vs_out_size[0]*0.001 + 0.2);
+	}
+
 	EmitVertex();
 	EndPrimitive();
 }

@@ -23,7 +23,7 @@ struct ParticleVertex
 GLuint Query = 0;
 
 Clouds::Clouds(unsigned int screenResolutionX, unsigned int screenResolutionY) :
-	moveShader(new ShaderObject("Shader\\cloudPassThrough.vert", "Shader\\cloudRendering.frag", "Shader\\cloudMove.geom", transformFeedbackVaryings, 3)),
+	moveShader(new ShaderObject("Shader\\cloudPassThrough.vert", "", "Shader\\cloudMove.geom", transformFeedbackVaryings, 3)),
 	renderingShader(new ShaderObject("Shader\\cloudPassThrough.vert", "Shader\\cloudRendering.frag", "Shader\\cloudRendering.geom"))
 {
 	// set ubo bindings
@@ -116,10 +116,13 @@ void Clouds::display(float timeSinceLastFrame)
 		std::cout << PrimitivesWritten << std::endl;*/
 	
 	// render clouds
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glBindVertexArray(vao_cloudParticleBuffer_Write);
 	renderingShader->useProgram();
 	glDrawArrays(GL_POINTS, 0, maxNumCloudParticles);
 	glBindVertexArray(0);
+	glDisable(GL_BLEND);
 
 	// rotate read/write buffer
 	swap(vao_cloudParticleBuffer_Read, vao_cloudParticleBuffer_Write);
