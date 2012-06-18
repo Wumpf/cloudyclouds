@@ -11,6 +11,8 @@ layout(std140) uniform View
 	mat4 View;
 	mat4 ViewProjection;
 	vec3 CameraPosition;
+	vec3 CameraRight;
+	vec3 CameraUp;
 };
 
 Binding 2:

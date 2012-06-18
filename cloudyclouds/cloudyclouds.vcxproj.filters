@@ -104,5 +104,11 @@
     <None Include="Shader\cloudPassThrough.vert">
       <Filter>Shader</Filter>
     </None>
+    <None Include="Shader\cloudFOM.geom">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\cloudFOM.frag">
+      <Filter>Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

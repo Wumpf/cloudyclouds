@@ -168,7 +168,7 @@ public:
 																	  		 0.0f, 0.0f, 0.0f, 1.0f); }
 
 	static Matrix4 projectionPerspective(float FOV, float aspect, float nearPlane, float farPlane);
-	//static Matrix4 projectionOrthogonal(float width, float height, float nearPlane, float farPlane);
+	static Matrix4 projectionOrthogonal(float width, float height, float nearPlane, float farPlane);
 	static Matrix4 camera(const Vector3& vPos, const Vector3& vLockAt, const Vector3& vUp = Vector3(0.0f, 1.0f, 0.0f));
 	
 	// utils

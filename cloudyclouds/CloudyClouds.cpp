@@ -22,7 +22,7 @@ CloudyClouds::CloudyClouds() :
 	glfwOpenWindowHint(GLFW_FSAA_SAMPLES, 0);
 	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MAJOR, 3);	// want opengl 3.3
 	glfwOpenWindowHint(GLFW_OPENGL_VERSION_MINOR, 3);
-	//glfwOpenWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+	glfwOpenWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
 
 	// glfw init
 	if(glfwInit() != GL_TRUE)
@@ -33,7 +33,7 @@ CloudyClouds::CloudyClouds() :
 	// resolution
 	backBufferResolutionX = 1024;
 	backBufferResolutionY = 768;
-
+	
 #if WIN32
 	// try systemres
 	HMONITOR hMonitor = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);	//MONITOR_DEFAULTTONEAREST
@@ -91,7 +91,7 @@ void CloudyClouds::InitUBOs()
 	// view ubo
 	glGenBuffers(1, &uboView);
 	glBindBuffer(GL_UNIFORM_BUFFER, uboView); 
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(float) * 4 * 9, NULL, GL_STREAM_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(float) * 4 * 11, NULL, GL_STREAM_DRAW);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboView);	// bind to index 1 - its assumed that ubo-index1-binding will never change
 
 	// timings ubo
@@ -138,6 +138,8 @@ bool CloudyClouds::display(float timeSinceLastFrame)
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(float) * 4 * 4, camera->getViewMatrix());	// update view
 	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * 4*4 , sizeof(float) * 4 * 4, camera->getViewMatrix() * projectionMatrix);	// update viewprojection
 	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * 4*4 *2, sizeof(float) * 3, camera->getPosition());
+	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * (4*4 *2 + 4), sizeof(float) * 3, Vector3(camera->getViewMatrix().m11, camera->getViewMatrix().m21, camera->getViewMatrix().m31));
+	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * (4*4 *2 + 8), sizeof(float) * 3, Vector3(camera->getViewMatrix().m12, camera->getViewMatrix().m22, camera->getViewMatrix().m32));
 
 	// update timings
 	glBindBuffer(GL_UNIFORM_BUFFER, uboTimings);

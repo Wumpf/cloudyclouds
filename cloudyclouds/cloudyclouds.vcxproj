@@ -109,6 +109,8 @@
     <ClInclude Include="Vector3.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shader\cloudFOM.frag" />
+    <None Include="Shader\cloudFOM.geom" />
     <None Include="Shader\cloudMove.geom" />
     <None Include="Shader\cloudPassThrough.vert" />
     <None Include="Shader\cloudRendering.frag" />
