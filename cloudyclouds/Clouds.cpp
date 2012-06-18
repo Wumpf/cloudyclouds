@@ -36,16 +36,25 @@ Clouds::Clouds(unsigned int screenResolutionX, unsigned int screenResolutionY) :
 	GLuint blockIndex = glGetUniformBlockIndex(moveShader->getProgram(), "Timings"); 
 	glUniformBlockBinding(moveShader->getProgram(), blockIndex, 2);	// Timings binding=2
 	checkGLError("settings cloudMove");
+		
 		// fom
 	fomShaderUniformIndex_cameraX = glGetUniformLocation(fomShader->getProgram(), "CameraRight");
 	fomShaderUniformIndex_cameraY = glGetUniformLocation(fomShader->getProgram(), "CameraUp");
 	fomShaderUniformIndex_lightViewProjection = glGetUniformLocation(fomShader->getProgram(), "LightViewProjection");
 	checkGLError("settings cloudFOM");
+
 		// rendering
 	blockIndex = glGetUniformBlockIndex(renderingShader->getProgram(), "Screen"); 
 	glUniformBlockBinding(renderingShader->getProgram(), blockIndex, 0);	// Screen binding=0
 	blockIndex = glGetUniformBlockIndex(renderingShader->getProgram(), "View"); 
 	glUniformBlockBinding(renderingShader->getProgram(), blockIndex, 1);	// View binding=1
+
+	renderingShaderUniformIndex_lightViewProjection = glGetUniformLocation(fomShader->getProgram(), "LightViewProjection");
+	
+	renderingShader->useProgram();
+	glUniform1i(glGetUniformLocation(fomShader->getProgram(), "FOMSampler0"), 0);
+	glUniform1i(glGetUniformLocation(fomShader->getProgram(), "FOMSampler1"), 0);
+
 	checkGLError("settings cloudRendering");
 
 	// vbo
@@ -135,7 +144,18 @@ Clouds::~Clouds()
 	glDeleteVertexArrays(1, &vao_cloudParticleBuffer_Write);
 	glDeleteBuffers(1, &vbo_cloudParticleBuffer_Read);
 	glDeleteBuffers(1, &vbo_cloudParticleBuffer_Write);
+}
 
+void Clouds::shaderSetup()
+{
+}
+
+void Clouds::samplerSetup()
+{
+}
+
+void Clouds::bufferSetup()
+{
 }
 
 void Clouds::display(float timeSinceLastFrame)

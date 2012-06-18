@@ -42,7 +42,7 @@ void main()
 	gs_out_Depth = (uperRight.z + 1.0) * 0.5;
 
 	// generate quad
-	gl_Position.zw = vec2(uperRight_clip.z / uperRight_clip.w, 1.0);
+	gl_Position.zw = vec2(uperRight.z / uperRight.w, 1.0);
 	gl_Position.xy = screenCorMinMax.xy;
 	gs_out_internPos = vec2(-1.0, -1.0);
 	EmitVertex();

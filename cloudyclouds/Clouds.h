@@ -14,6 +14,11 @@ public:
 	void display(float timeSinceLastFrame);
 
 private:
+	void shaderSetup();
+	void samplerSetup();
+	void bufferSetup();
+
+
 	std::unique_ptr<class ShaderObject> moveShader;
 	std::unique_ptr<class ShaderObject> fomShader;
 	std::unique_ptr<class ShaderObject> renderingShader;
@@ -24,6 +29,8 @@ private:
 	GLuint fomShaderUniformIndex_cameraX;
 	GLuint fomShaderUniformIndex_cameraY;
 	GLuint fomShaderUniformIndex_lightViewProjection;
+	// rendering shader unifrom indices
+	GLuint renderingShaderUniformIndex_lightViewProjection;
 
 	// cloud particle data
 	GLuint vbo_cloudParticleBuffer_Read;
