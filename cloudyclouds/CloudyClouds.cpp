@@ -55,13 +55,14 @@ CloudyClouds::CloudyClouds() :
 		throw std::exception((std::string("ERROR: glewInit() failed!\n") + (char*)glewGetErrorString(err)).c_str());
 
 	// projection matrix
-	projectionMatrix = Matrix4::projectionPerspective(degToRad(45.0f), static_cast<float>(backBufferResolutionX) / backBufferResolutionY, 0.1f, 400.0f);
+	const float farPlaneDistance = 400.0f;
+	projectionMatrix = Matrix4::projectionPerspective(degToRad(45.0f), static_cast<float>(backBufferResolutionX) / backBufferResolutionY, 0.1f, farPlaneDistance);
 
 	// uniform buffers
 	InitUBOs();
 
 	// init cloud rendering
-	clouds.reset(new Clouds(backBufferResolutionX, backBufferResolutionY));
+	clouds.reset(new Clouds(backBufferResolutionX, backBufferResolutionY, farPlaneDistance));
 
 	// start position
 	camera->setPosition(Vector3(0,50,0));

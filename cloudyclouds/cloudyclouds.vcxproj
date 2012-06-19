@@ -111,7 +111,7 @@
   <ItemGroup>
     <None Include="Shader\cloudFOM.frag" />
     <None Include="Shader\cloudFOM.geom" />
-    <None Include="Shader\cloudMove.geom" />
+    <None Include="Shader\cloudMove.vert" />
     <None Include="Shader\cloudPassThrough.vert" />
     <None Include="Shader\cloudRendering.frag" />
     <None Include="Shader\cloudRendering.geom" />

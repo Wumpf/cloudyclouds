@@ -8,7 +8,7 @@
 class Clouds
 {
 public:
-	Clouds(unsigned int screenResolutionX, unsigned int screenResolutionY);
+	Clouds(unsigned int screenResolutionX, unsigned int screenResolutionY, float farPlaneDistance);
 	~Clouds();
 
 	void display(float timeSinceLastFrame);
@@ -19,12 +19,15 @@ private:
 	void samplerSetup();
 	void bufferSetup();
 
+	void particleSorting();
+
 
 	std::unique_ptr<class ShaderObject> moveShader;
 	std::unique_ptr<class ShaderObject> fomShader;
 	std::unique_ptr<class ShaderObject> renderingShader;
 
 	unsigned int screenResolutionX, screenResolutionY;
+	float farPlaneDistance;
 
 	// fom shader uniform indices
 	GLuint fomShaderUniformIndex_cameraX;
@@ -39,11 +42,21 @@ private:
 	GLuint vao_cloudParticleBuffer_Read;
 	GLuint vao_cloudParticleBuffer_Write;
 
-	GLuint vbo_cloudParticleRendering;
 	GLuint ibo_cloudParticleRendering;
-	GLuint vao_cloudParticleRendering;
-	GLuint vbo_cloudParticleDepth;
-	
+
+	// struct-representation of a particle vertex
+	struct ParticleVertex
+	{
+		float position[3];
+		float size;
+		float lifetime;
+		float depth;
+	};
+
+	// buffer for cpu write/read operations
+	std::unique_ptr<ParticleVertex[]> particleVertexBuffer;
+	std::unique_ptr<unsigned short[]> particleIndexBuffer;
+	unsigned int numParticles_Prediction;
 
 	// FOM
 	GLuint fourierOpacityMap_Textures[2];

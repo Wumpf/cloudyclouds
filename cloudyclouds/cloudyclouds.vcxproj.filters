@@ -98,9 +98,6 @@
       <Filter>Shader</Filter>
     </None>
     <None Include="uniform buffer bindings.txt" />
-    <None Include="Shader\cloudMove.geom">
-      <Filter>Shader</Filter>
-    </None>
     <None Include="Shader\cloudPassThrough.vert">
       <Filter>Shader</Filter>
     </None>
@@ -108,6 +105,9 @@
       <Filter>Shader</Filter>
     </None>
     <None Include="Shader\cloudFOM.frag">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\cloudMove.vert">
       <Filter>Shader</Filter>
     </None>
   </ItemGroup>
