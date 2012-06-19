@@ -33,15 +33,10 @@ in float vs_out_depthviewspace[1];	// [-1, 1] depth
 out vec3 gs_out_worldPos;
 out vec2 gs_out_internPos; 
 out float gs_out_Alpha;
+//out float gs_out_depth;
 
 void main()
 {
-	// culling
-	// culls everything behind near plane
-	/// culling left/right/up/down (cloudMove.vert wrote this to a large float value) and far plane culling is integrated by cpu - very simple after depth sorting :)
-	if(abs(vs_out_depthviewspace[0]) < 0.0)	
-		return;
-
 	// gen view aligned quad
 	// http://www.flipcode.com/archives/Billboarding-Excerpt_From_iReal-Time_Renderingi_2E.shtml
 
@@ -62,6 +57,7 @@ void main()
 
 	// alpha
 	gs_out_Alpha = min(vs_out_remainingLifeTime[0] / alphaBlendLength, 1.0);
+	//gs_out_depth = vs_out_depthviewspace[0] * 0.1;
 
 	// generate quad
 	gl_Position.zw = vec2(uperRight_clip.z / uperRight_clip.w, 1.0);

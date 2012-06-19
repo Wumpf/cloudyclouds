@@ -42,6 +42,7 @@ Clouds::~Clouds()
 	glDeleteVertexArrays(1, &vao_cloudParticleBuffer_Write);
 	glDeleteBuffers(1, &vbo_cloudParticleBuffer_Read);
 	glDeleteBuffers(1, &vbo_cloudParticleBuffer_Write);
+	glDeleteBuffers(1, &ibo_cloudParticleRendering);
 }
 
 void Clouds::shaderSetup()
@@ -180,17 +181,20 @@ void Clouds::particleSorting()
 
 	// sort by depth
 	std::sort(particleIndexBuffer.get(), particleIndexBuffer.get() + maxNumCloudParticles, 
-				[&](size_t i, size_t j) { return particleVertexBuffer[i].depth < particleVertexBuffer[j].depth; });
+				[&](size_t i, size_t j) { return particleVertexBuffer[i].depth > particleVertexBuffer[j].depth; });
+
+	// count num visible (the cloudMove.vert wrote a large depth value for all particles left/right/up/down/behind frustum)
+	unsigned int numParticlesInvalid = 0;
+	while(particleVertexBuffer[particleIndexBuffer[numParticlesInvalid]].depth > farPlaneDistance)
+		++numParticlesInvalid;
+	numParticlesRender = maxNumCloudParticles - numParticlesInvalid;
 
 	// write ibo
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cloudParticleRendering);
-	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(unsigned short) * maxNumCloudParticles, particleIndexBuffer.get());
+	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(unsigned short) * numParticlesRender, particleIndexBuffer.get() + numParticlesInvalid);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-	// count num visible (the cloudMove.vert wrote a large depth value for all particles left/right/up/down frustum
-	numParticles_Prediction = 0;
-	while(particleVertexBuffer[particleIndexBuffer[numParticles_Prediction]].depth < farPlaneDistance)
-		++numParticles_Prediction;
+	std::cout << "Num Particles rendered: " << numParticlesRender << " \r";
 }
 
 void Clouds::display(float timeSinceLastFrame)
@@ -237,7 +241,7 @@ void Clouds::display(float timeSinceLastFrame)
 	
 	// render clouds
 	renderingShader->useProgram();
-	//glUniformMatrix4fv(renderingShaderUniformIndex_lightViewProjection, 1, false, lightViewProjection);
+	glUniformMatrix4fv(renderingShaderUniformIndex_lightViewProjection, 1, false, lightViewProjection);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, fourierOpacityMap_Textures[0]);
@@ -247,7 +251,7 @@ void Clouds::display(float timeSinceLastFrame)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cloudParticleRendering);
 	
-	glDrawElements(GL_POINTS, numParticles_Prediction, GL_UNSIGNED_SHORT, 0);
+	glDrawElements(GL_POINTS, numParticlesRender, GL_UNSIGNED_SHORT, 0);
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

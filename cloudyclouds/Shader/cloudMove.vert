@@ -29,7 +29,7 @@ const float thermicFactor = 0.5;
 layout(location = 0) in vec3 vs_in_position;
 layout(location = 1) in float vs_in_size;
 layout(location = 2) in float vs_in_remainingLifeTime;
-layout(location = 3) in float vs_in_depth;
+//layout(location = 3) in float vs_in_depth;
 
 // output
 out vec3 vs_out_position;
@@ -88,6 +88,8 @@ void main()
 	}
 	else
 	{
-		vs_out_depthviewspace = -(ViewProjection * vec4(vs_out_position, 1)).z;	// \todo transposing matrices and swaping matrices could save some ops
+		vs_out_depthviewspace = (ViewProjection * vec4(vs_out_position, 1)).z;	// \todo transposing matrices and swaping matrices could save some ops
+		if(vs_out_depthviewspace < 0.0)
+			vs_out_depthviewspace = 999999;
 	}
 }

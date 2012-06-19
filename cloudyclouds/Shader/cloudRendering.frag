@@ -12,6 +12,7 @@ const float twoPI = 6.28318531;
 in vec3 gs_out_worldPos;
 in vec2 gs_out_internPos;
 in float gs_out_Alpha;
+//in float gs_out_depth;
 
 // output
 out vec4 fragColor;
@@ -42,6 +43,7 @@ void main()
 				 b1 * (1.0-cos(twoPI * depth)) + b2 * (1.0-cos(twoPI * depth * 2)) * 2  +  b3 * (1.0-cos(twoPI * depth * 3)) * 3) / twoPI;
 	shadowing = 1.0 - exp(-shadowing);
 
-   // fragColor = vec4(/*shadowing,shadowing,shadowing*/1,1,1, alpha);//vec4(gs_out_worldPos, alpha * gs_out_Alpha);
-   fragColor = sign(gs_out_internPos.x) == sign(gs_out_internPos.y) ? vec4(1,0,0,alpha) : vec4(0,1,0,alpha);
+   fragColor = vec4(shadowing,shadowing,shadowing, alpha);//vec4(gs_out_worldPos, alpha * gs_out_Alpha);
+ //  fragColor = sign(gs_out_internPos.x) == sign(gs_out_internPos.y) ? vec4(1,0,0,alpha) : vec4(0,1,0,alpha);
+ //fragColor = vec4(gs_out_depth,gs_out_depth,gs_out_depth,alpha);
 }

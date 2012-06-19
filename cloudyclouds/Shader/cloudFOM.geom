@@ -6,6 +6,8 @@ layout(triangle_strip, max_vertices = 4) out;
 
 // uniforms
 uniform mat4 LightViewProjection;
+uniform mat4 LightViewMatrix;
+uniform float farPlane;
 uniform vec3 CameraRight;
 uniform vec3 CameraUp;
 
@@ -32,6 +34,7 @@ void main()
 	vec4 absScreenCorMinMax = abs(screenCorMinMax);
 	if(all(greaterThan(absScreenCorMinMax.xz, uperRight.ww)) ||
 	   all(greaterThan(absScreenCorMinMax.yw, uperRight.ww)))
+	   return;
 
 	// alpha
 	gs_out_Alpha = min(vs_out_remainingLifeTime[0] / alphaBlendLength, 1.0);

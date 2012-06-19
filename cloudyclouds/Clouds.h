@@ -56,7 +56,7 @@ private:
 	// buffer for cpu write/read operations
 	std::unique_ptr<ParticleVertex[]> particleVertexBuffer;
 	std::unique_ptr<unsigned short[]> particleIndexBuffer;
-	unsigned int numParticles_Prediction;
+	unsigned int numParticlesRender;
 
 	// FOM
 	GLuint fourierOpacityMap_Textures[2];
