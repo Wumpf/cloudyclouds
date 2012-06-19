@@ -15,6 +15,7 @@ public:
 
 private:
 	void shaderSetup();
+	void fboSetup();
 	void samplerSetup();
 	void bufferSetup();
 
@@ -37,6 +38,12 @@ private:
 	GLuint vbo_cloudParticleBuffer_Write;
 	GLuint vao_cloudParticleBuffer_Read;
 	GLuint vao_cloudParticleBuffer_Write;
+
+	GLuint vbo_cloudParticleRendering;
+	GLuint ibo_cloudParticleRendering;
+	GLuint vao_cloudParticleRendering;
+	GLuint vbo_cloudParticleDepth;
+	
 
 	// FOM
 	GLuint fourierOpacityMap_Textures[2];

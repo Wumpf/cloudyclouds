@@ -33,7 +33,6 @@ out vec3 gs_out_worldPos;
 out vec2 gs_out_internPos;
 out float gs_out_Alpha;
 
-
 void main()
 {
 	// gen view aligned quad
