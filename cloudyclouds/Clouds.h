@@ -68,7 +68,7 @@ private:
 	GLuint fourierOpacityMap_FBO;
 
 	// noise
-	GLuint perlinNoiseVolume;
+	GLuint perlinNoiseVolumeTexture;
 
 	// sampler
 	GLuint linearSampler_noMipMaps;
@@ -76,6 +76,6 @@ private:
 	static const char* transformFeedbackVaryings[];
 	static const unsigned int maxNumCloudParticles;
 	static const unsigned int fourierOpacityMapSize;
-	static const unsigned int perlinNoiseVolumeSize;
+	static const unsigned int perlinNoiseVolumeTextureSize;
 };
 

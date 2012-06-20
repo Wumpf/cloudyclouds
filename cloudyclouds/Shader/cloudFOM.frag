@@ -1,5 +1,8 @@
 #version 330
 
+// uniforms
+uniform sampler3D VolumeTexture;
+
 // input
 in vec2 gs_out_internPos;
 in float gs_out_Alpha;
@@ -18,6 +21,7 @@ void main()
 	if(inverseAlpha > 1.0)
 		discard;
 
+	inverseAlpha = 1.0f - (1.0f - inverseAlpha) * textureLod(VolumeTexture, vec3((gs_out_internPos+vec2(1.0, 1.0))*0.5, 0), 0).r;
 
 	float twoPi_depth = twoPI * gs_out_Depth;
 	

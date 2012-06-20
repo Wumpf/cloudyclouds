@@ -6,7 +6,7 @@ class PerlinNoiseGenerator
 {
 public:
 	std::unique_ptr<unsigned char[]> generate(unsigned int width, unsigned int height, unsigned int depth,
-											float Frequency, float Amplitude, float Persistance, int Octaves);
+											float Frequency, float Amplitude, float Persistance, int Octaves, float threshhold);
 
 
 	/// singleton getter

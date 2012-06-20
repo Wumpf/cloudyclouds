@@ -12,7 +12,7 @@
 const char* Clouds::transformFeedbackVaryings[] = { "vs_out_position", "vs_out_size", "vs_out_remainingLifeTime", "vs_out_depthviewspace" };
 const unsigned int Clouds::maxNumCloudParticles = 1000;//16384;
 const unsigned int Clouds::fourierOpacityMapSize = 1024;
-const unsigned int Clouds::perlinNoiseVolumeSize = 16;
+const unsigned int Clouds::perlinNoiseVolumeTextureSize = 16;
 
 
 #ifndef BUFFER_OFFSET
@@ -47,7 +47,7 @@ Clouds::~Clouds()
 	glDeleteBuffers(1, &vbo_cloudParticleBuffer_Read);
 	glDeleteBuffers(1, &vbo_cloudParticleBuffer_Write);
 	glDeleteBuffers(1, &ibo_cloudParticleRendering);
-	glDeleteBuffers(1, &perlinNoiseVolume);
+	glDeleteBuffers(1, &perlinNoiseVolumeTexture);
 }
 
 void Clouds::shaderSetup()
@@ -66,6 +66,7 @@ void Clouds::shaderSetup()
 	fomShaderUniformIndex_lightViewMatrix = glGetUniformLocation(fomShader->getProgram(), "LightViewMatrix");
 	fomShaderUniformIndex_farPlane = glGetUniformLocation(fomShader->getProgram(), "FarPlane");
 	fomShaderUniformIndex_lightViewProjection = glGetUniformLocation(fomShader->getProgram(), "LightViewProjection");
+	glUniform1i(glGetUniformLocation(fomShader->getProgram(), "VolumeTexture"), 0);
 	checkGLError("settings cloudFOM");
 
 		// rendering
@@ -77,8 +78,9 @@ void Clouds::shaderSetup()
 	renderingShaderUniformIndex_lightViewProjection = glGetUniformLocation(renderingShader->getProgram(), "LightViewProjection");
 	
 	renderingShader->useProgram();
-	glUniform1i(glGetUniformLocation(fomShader->getProgram(), "FOMSampler0"), 0);
-	glUniform1i(glGetUniformLocation(fomShader->getProgram(), "FOMSampler1"), 0);
+	glUniform1i(glGetUniformLocation(renderingShader->getProgram(), "VolumeTexture"), 0);
+	glUniform1i(glGetUniformLocation(renderingShader->getProgram(), "FOMSampler0"), 1);
+	glUniform1i(glGetUniformLocation(renderingShader->getProgram(), "FOMSampler1"), 2);
 
 	checkGLError("settings cloudRendering");
 }
@@ -181,11 +183,11 @@ void Clouds::bufferSetup()
 
 void Clouds::noiseSetup()
 {
-	glGenTextures(1, &perlinNoiseVolume);
-	glBindTexture(GL_TEXTURE_3D, perlinNoiseVolume);
-	auto noise = PerlinNoiseGenerator::get().generate(perlinNoiseVolumeSize,perlinNoiseVolumeSize,perlinNoiseVolumeSize,
-																0.03f, 0.5f, 0.45f, 5);
-	glTexImage3D(GL_TEXTURE_3D, 0, GL_R8, perlinNoiseVolumeSize, perlinNoiseVolumeSize, perlinNoiseVolumeSize, 0,
+	glGenTextures(1, &perlinNoiseVolumeTexture);
+	glBindTexture(GL_TEXTURE_3D, perlinNoiseVolumeTexture);
+	auto noise = PerlinNoiseGenerator::get().generate(perlinNoiseVolumeTextureSize,perlinNoiseVolumeTextureSize,perlinNoiseVolumeTextureSize,
+																0.03f, 0.5f, 0.45f, 3, 0.05f);
+	glTexImage3D(GL_TEXTURE_3D, 0, GL_R8, perlinNoiseVolumeTextureSize, perlinNoiseVolumeTextureSize, perlinNoiseVolumeTextureSize, 0,
 						GL_RED, GL_UNSIGNED_BYTE, noise.get());
 	glBindTexture(GL_TEXTURE_3D, 0);
 }
@@ -225,6 +227,8 @@ void Clouds::display(float timeSinceLastFrame)
 	// then (still rendering) the upated particles will be sorted - frame ended, buffer switch
 	// (so new data is used with a delay!)
 	glBindVertexArray(vao_cloudParticleBuffer_Read);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_3D, perlinNoiseVolumeTexture);
 
 
 	// move clouds
@@ -239,8 +243,8 @@ void Clouds::display(float timeSinceLastFrame)
 	// render FOM
 	fomShader->useProgram();
 		// setup
-	Matrix4 lightProject = Matrix4::projectionOrthogonal(300, 300, 0, 500);
-	Matrix4 lightView = Matrix4::camera(Vector3(0, 150, 0), Vector3(0, 0, 0), Vector3(1,0,0));
+	Matrix4 lightProject = Matrix4::projectionOrthogonal(200, 200, 0, 500);
+	Matrix4 lightView = Matrix4::camera(Vector3(0, 150, 0), Vector3(sin(glfwGetTime())*50, 0, 0), Vector3(1,0,0));
 	Matrix4 lightViewProjection = lightView * lightProject;
 	glUniform3fv(fomShaderUniformIndex_cameraX, 1, Vector3(lightView.m11, lightView.m21, lightView.m31));
 	glUniform3fv(fomShaderUniformIndex_cameraY, 1, Vector3(lightView.m12, lightView.m22, lightView.m32));
@@ -265,9 +269,9 @@ void Clouds::display(float timeSinceLastFrame)
 	renderingShader->useProgram();
 	glUniformMatrix4fv(renderingShaderUniformIndex_lightViewProjection, 1, false, lightViewProjection);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, fourierOpacityMap_Textures[0]);
 	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, fourierOpacityMap_Textures[0]);
+	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, fourierOpacityMap_Textures[1]);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -280,9 +284,12 @@ void Clouds::display(float timeSinceLastFrame)
 	glDisable(GL_BLEND);
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(GL_TEXTURE_3D, 0);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, 0);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
 
 	// sort the new hopefully ready particles, while hopefully the screen itself is drawing
 	particleSorting();
