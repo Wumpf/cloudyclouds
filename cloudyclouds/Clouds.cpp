@@ -1,15 +1,18 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "Clouds.h"
 #include "ShaderObject.h"
 #include "Utils.h"
 #include "Vector3.h"
 #include "Matrix4.h"
 
+#include "PerlinNoiseGenerator.h"
+
 #include <algorithm>
 
 const char* Clouds::transformFeedbackVaryings[] = { "vs_out_position", "vs_out_size", "vs_out_remainingLifeTime", "vs_out_depthviewspace" };
 const unsigned int Clouds::maxNumCloudParticles = 1000;//16384;
 const unsigned int Clouds::fourierOpacityMapSize = 1024;
+const unsigned int Clouds::perlinNoiseVolumeSize = 16;
 
 
 #ifndef BUFFER_OFFSET
@@ -30,6 +33,7 @@ Clouds::Clouds(unsigned int screenResolutionX, unsigned int screenResolutionY, f
 	fboSetup();
 	bufferSetup();
 	samplerSetup();
+	noiseSetup();
 }
 
 Clouds::~Clouds()
@@ -43,6 +47,7 @@ Clouds::~Clouds()
 	glDeleteBuffers(1, &vbo_cloudParticleBuffer_Read);
 	glDeleteBuffers(1, &vbo_cloudParticleBuffer_Write);
 	glDeleteBuffers(1, &ibo_cloudParticleRendering);
+	glDeleteBuffers(1, &perlinNoiseVolume);
 }
 
 void Clouds::shaderSetup()
@@ -58,6 +63,8 @@ void Clouds::shaderSetup()
 		// fom
 	fomShaderUniformIndex_cameraX = glGetUniformLocation(fomShader->getProgram(), "CameraRight");
 	fomShaderUniformIndex_cameraY = glGetUniformLocation(fomShader->getProgram(), "CameraUp");
+	fomShaderUniformIndex_lightViewMatrix = glGetUniformLocation(fomShader->getProgram(), "LightViewMatrix");
+	fomShaderUniformIndex_farPlane = glGetUniformLocation(fomShader->getProgram(), "FarPlane");
 	fomShaderUniformIndex_lightViewProjection = glGetUniformLocation(fomShader->getProgram(), "LightViewProjection");
 	checkGLError("settings cloudFOM");
 
@@ -172,6 +179,17 @@ void Clouds::bufferSetup()
 	}
 }
 
+void Clouds::noiseSetup()
+{
+	glGenTextures(1, &perlinNoiseVolume);
+	glBindTexture(GL_TEXTURE_3D, perlinNoiseVolume);
+	auto noise = PerlinNoiseGenerator::get().generate(perlinNoiseVolumeSize,perlinNoiseVolumeSize,perlinNoiseVolumeSize,
+																0.03f, 0.5f, 0.45f, 5);
+	glTexImage3D(GL_TEXTURE_3D, 0, GL_R8, perlinNoiseVolumeSize, perlinNoiseVolumeSize, perlinNoiseVolumeSize, 0,
+						GL_RED, GL_UNSIGNED_BYTE, noise.get());
+	glBindTexture(GL_TEXTURE_3D, 0);
+}
+
 void Clouds::particleSorting()
 {
 	// read vbo
@@ -185,7 +203,7 @@ void Clouds::particleSorting()
 
 	// count num visible (the cloudMove.vert wrote a large depth value for all particles left/right/up/down/behind frustum)
 	unsigned int numParticlesInvalid = 0;
-	while(particleVertexBuffer[particleIndexBuffer[numParticlesInvalid]].depth > farPlaneDistance)
+	while(numParticlesInvalid < maxNumCloudParticles && particleVertexBuffer[particleIndexBuffer[numParticlesInvalid]].depth > farPlaneDistance)
 		++numParticlesInvalid;
 	numParticlesRender = maxNumCloudParticles - numParticlesInvalid;
 
@@ -221,18 +239,22 @@ void Clouds::display(float timeSinceLastFrame)
 	// render FOM
 	fomShader->useProgram();
 		// setup
-	Matrix4 project = Matrix4::projectionOrthogonal(300, 300, 0, 500);
-	Matrix4 view = Matrix4::camera(Vector3(0, 150, 0), Vector3(0, 0, 0), Vector3(1,0,0));
-	Matrix4 lightViewProjection = view * project;
-	glUniform3fv(fomShaderUniformIndex_cameraX, 1, Vector3(view.m11, view.m21, view.m31));
-	glUniform3fv(fomShaderUniformIndex_cameraY, 1, Vector3(view.m12, view.m22, view.m32));
+	Matrix4 lightProject = Matrix4::projectionOrthogonal(300, 300, 0, 500);
+	Matrix4 lightView = Matrix4::camera(Vector3(0, 150, 0), Vector3(0, 0, 0), Vector3(1,0,0));
+	Matrix4 lightViewProjection = lightView * lightProject;
+	glUniform3fv(fomShaderUniformIndex_cameraX, 1, Vector3(lightView.m11, lightView.m21, lightView.m31));
+	glUniform3fv(fomShaderUniformIndex_cameraY, 1, Vector3(lightView.m12, lightView.m22, lightView.m32));
 	glUniformMatrix4fv(fomShaderUniformIndex_lightViewProjection, 1, false, lightViewProjection);
+	glUniformMatrix4fv(fomShaderUniformIndex_lightViewMatrix, 1, false, lightView);
+	glUniform1f(fomShaderUniformIndex_farPlane, farPlaneDistance);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_ONE);	// additive blending
-	glViewport(0,0, fourierOpacityMapSize, fourierOpacityMapSize); 
+	glViewport(0,0, fourierOpacityMapSize, fourierOpacityMapSize);
+
 	glBindFramebuffer(GL_FRAMEBUFFER, fourierOpacityMap_FBO);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
+
 	glDrawArrays(GL_POINTS, 0, maxNumCloudParticles);
 		// reset stuff
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

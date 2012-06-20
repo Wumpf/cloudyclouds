@@ -86,6 +86,7 @@
     <ClCompile Include="CloudyClouds.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Matrix4.cpp" />
+    <ClCompile Include="PerlinNoiseGenerator.cpp" />
     <ClCompile Include="ScreenAlignedTriangle.cpp" />
     <ClCompile Include="ShaderObject.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -102,6 +103,7 @@
     <ClInclude Include="CloudyClouds.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="Matrix4.h" />
+    <ClInclude Include="PerlinNoiseGenerator.h" />
     <ClInclude Include="ScreenAlignedTriangle.h" />
     <ClInclude Include="ShaderObject.h" />
     <ClInclude Include="stdafx.h" />

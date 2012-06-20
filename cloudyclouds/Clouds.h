@@ -18,6 +18,7 @@ private:
 	void fboSetup();
 	void samplerSetup();
 	void bufferSetup();
+	void noiseSetup();
 
 	void particleSorting();
 
@@ -33,8 +34,11 @@ private:
 	GLuint fomShaderUniformIndex_cameraX;
 	GLuint fomShaderUniformIndex_cameraY;
 	GLuint fomShaderUniformIndex_lightViewProjection;
+	GLuint fomShaderUniformIndex_lightViewMatrix;
+	GLuint fomShaderUniformIndex_farPlane;
 	// rendering shader unifrom indices
 	GLuint renderingShaderUniformIndex_lightViewProjection;
+
 
 	// cloud particle data
 	GLuint vbo_cloudParticleBuffer_Read;
@@ -63,11 +67,15 @@ private:
 	GLuint fourierOpacityMap_DepthBuffer;
 	GLuint fourierOpacityMap_FBO;
 
+	// noise
+	GLuint perlinNoiseVolume;
+
 	// sampler
 	GLuint linearSampler_noMipMaps;
 
 	static const char* transformFeedbackVaryings[];
 	static const unsigned int maxNumCloudParticles;
 	static const unsigned int fourierOpacityMapSize;
+	static const unsigned int perlinNoiseVolumeSize;
 };
 

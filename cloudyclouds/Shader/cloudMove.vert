@@ -20,7 +20,7 @@ const vec3 spawnareaMin = vec3(-100, -10, -100);
 const vec3 spawnareaSpan = vec3(200, 20, 200);
 const float lifeTimeMin = 1.0;
 const float lifeTimeSpan = 10.0;
-const float growthFactor = 10; 
+const float growthFactor = 5.0; 
 const float windFactor = 1.5;
 const float thermicFactor = 0.5; 
 

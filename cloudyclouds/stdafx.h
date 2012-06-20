@@ -18,3 +18,6 @@
 #include <math.h>
 
 #include "Log.h"
+
+#undef min
+#undef max

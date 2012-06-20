@@ -7,7 +7,7 @@ layout(triangle_strip, max_vertices = 4) out;
 // uniforms
 uniform mat4 LightViewProjection;
 uniform mat4 LightViewMatrix;
-uniform float farPlane;
+uniform float FarPlane;
 uniform vec3 CameraRight;
 uniform vec3 CameraUp;
 
@@ -39,7 +39,7 @@ void main()
 	// alpha
 	gs_out_Alpha = min(vs_out_remainingLifeTime[0] / alphaBlendLength, 1.0);
 	// depth
-	gs_out_Depth = (uperRight.z + 1.0) * 0.5;
+	gs_out_Depth = (LightViewMatrix * vec4(vs_out_position[0], 1.0)).z / FarPlane;	// \todo transposing matrices and swaping matrices could save some ops
 
 	// generate quad
 	gl_Position.zw = vec2(uperRight.z / uperRight.w, 1.0);

@@ -27,7 +27,7 @@ const float alphaBlendLength = 0.8;
 in vec3 vs_out_position[1];
 in float vs_out_size[1];
 in float vs_out_remainingLifeTime[1];
-in float vs_out_depthviewspace[1];	// [-1, 1] depth
+//in float vs_out_depthviewspace[1];	// [-1, 1] depth
 
 // output
 out vec3 gs_out_worldPos;
