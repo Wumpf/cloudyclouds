@@ -13,7 +13,7 @@ uniform vec3 CameraUp;
 
 // constants
 const float alphaBlendLength = 0.8;
-const float maxAlpha = 0.4;
+const float maxAlpha = 0.6;
 
 // input
 in vec3 vs_out_position[1];
@@ -21,7 +21,7 @@ in float vs_out_size[1];
 in float vs_out_remainingLifeTime[1];
 
 // output
-out vec2 gs_out_internPos;
+out vec2 gs_out_texcoord;
 out float gs_out_Alpha;
 out float gs_out_Depth;
 
@@ -45,16 +45,16 @@ void main()
 	// generate quad
 	gl_Position.zw = vec2(uperRight.z / uperRight.w, 1.0);
 	gl_Position.xy = screenCorMinMax.xy;
-	gs_out_internPos = vec2(-1.0, -1.0);
+	gs_out_texcoord = vec2(0.0, 0.0);
 	EmitVertex();
 	gl_Position.xy = screenCorMinMax.xw;
-	gs_out_internPos = vec2(-1.0, 1.0);
+	gs_out_texcoord = vec2(0.0, 1.0);
 	EmitVertex();
 	gl_Position.xy = screenCorMinMax.zy;
-	gs_out_internPos = vec2(1.0, -1.0);
+	gs_out_texcoord = vec2(1.0, 0.0);
 	EmitVertex();
 	gl_Position.xy = screenCorMinMax.zw;
-	gs_out_internPos = vec2(1.0, 1.0);
+	gs_out_texcoord = vec2(1.0, 1.0);
 	EmitVertex();
 	EndPrimitive();
 }

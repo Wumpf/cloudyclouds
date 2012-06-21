@@ -4,7 +4,7 @@
 uniform sampler2D NoiseTexture;
 
 // input
-in vec2 gs_out_internPos;
+in vec2 gs_out_texcoord;
 in float gs_out_Alpha;
 in float gs_out_Depth;
 
@@ -16,13 +16,10 @@ layout(location = 1) out vec4 coef1;
 const float twoPI = 6.28318531;
 
 void main()
-{	
-	float alpha = (1.0 - dot(gs_out_internPos,gs_out_internPos)) * gs_out_Alpha;
+{
+	float alpha = texture(NoiseTexture, gs_out_texcoord).a * gs_out_Alpha;
 	if(alpha < 0.001)
 		discard;
-
-	//alpha *= texture(NoiseTexture, (gs_out_internPos+vec2(1.0, 1.0))*0.5).r;
-
 	float inverseAlpha = 1.0 - alpha;
 
 	#define a0 coef0.x

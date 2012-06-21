@@ -22,7 +22,7 @@ layout(std140) uniform View
 
 // constants
 const float alphaBlendLength = 0.8;
-const float maxAlpha = 0.4;
+const float maxAlpha = 0.6;
 
 // input
 in vec3 vs_out_position[1];
@@ -32,7 +32,7 @@ in float vs_out_remainingLifeTime[1];
 
 // output
 out vec3 gs_out_worldPos;
-out vec2 gs_out_internPos; 
+out vec2 gs_out_texcoord; 
 out float gs_out_Alpha;
 //out float gs_out_depth;
 
@@ -64,19 +64,19 @@ void main()
 	gl_Position.zw = vec2(uperRight_clip.z / uperRight_clip.w, 1.0);
 	gl_Position.xy = screenCorMinMax.xy;
 	gs_out_worldPos = uperRight_world;
-	gs_out_internPos = vec2(-1.0, -1.0);
+	gs_out_texcoord = vec2(0.0, 0.0);
 	EmitVertex();
 	gl_Position.xy = screenCorMinMax.xw;
 	gs_out_worldPos = vs_out_position[0] + right - up;
-	gs_out_internPos = vec2(-1.0, 1.0);
+	gs_out_texcoord = vec2(0.0, 1.0);
 	EmitVertex();
 	gl_Position.xy = screenCorMinMax.zy;
 	gs_out_worldPos = vs_out_position[0] - right + up;
-	gs_out_internPos = vec2(1.0, -1.0);
+	gs_out_texcoord = vec2(1.0, 0.0);
 	EmitVertex();
 	gl_Position.xy = screenCorMinMax.zw;
 	gs_out_worldPos = lowerLeft_world;
-	gs_out_internPos = vec2(1.0, 1.0);
+	gs_out_texcoord = vec2(1.0, 1.0);
 	EmitVertex();
 	EndPrimitive();
 }

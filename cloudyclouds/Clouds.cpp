@@ -9,8 +9,10 @@
 
 #include <algorithm>
 
+#include <stb_image.h>
+
 const char* Clouds::transformFeedbackVaryings[] = { "vs_out_position", "vs_out_size", "vs_out_remainingLifeTime", "vs_out_depthviewspace" };
-const unsigned int Clouds::maxNumCloudParticles = 5000;//16384;
+const unsigned int Clouds::maxNumCloudParticles = 4000;//16384;
 const unsigned int Clouds::fourierOpacityMapSize = 1024;
 const unsigned int Clouds::noiseTextureSize = 512;
 
@@ -187,12 +189,26 @@ void Clouds::bufferSetup()
 
 void Clouds::noiseSetup()
 {
-	glGenTextures(1, &noiseTexture);
+	/*glGenTextures(1, &noiseTexture);
 	glBindTexture(GL_TEXTURE_2D, noiseTexture);
 	auto noise = PerlinNoiseGenerator::get().generate(noiseTextureSize,noiseTextureSize, 0.006f, 0.3f, 0.2f, 5, 0.3f);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, noiseTextureSize, noiseTextureSize, 0, GL_RED, GL_UNSIGNED_BYTE, noise.get());
 	glGenerateMipmap(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);*/
+
+	int TexSizeX, TexSizeY;
+
+	stbi_uc* TextureData = stbi_load("particle.png", &TexSizeX, &TexSizeY, NULL, 4);
+	if(!TextureData)
+		Log::get() << "Error while loading texture particle.png\n";
+
+	glGenTextures(1, &noiseTexture);
+	glBindTexture(GL_TEXTURE_2D, noiseTexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, TexSizeX, TexSizeX, 0, GL_RGBA, GL_UNSIGNED_BYTE, TextureData);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	stbi_image_free(TextureData);
 }
 
 void Clouds::particleSorting()
@@ -248,7 +264,7 @@ void Clouds::display(float timeSinceLastFrame)
 		// setup
 	float lightFarPlane = 300;
 	Matrix4 lightProject = Matrix4::projectionOrthogonal(300, 300, 0, lightFarPlane);
-	Matrix4 lightView = Matrix4::camera(Vector3(-25, 100, 0), Vector3(0, 30.0f, 0), Vector3(1,0,0));
+	Matrix4 lightView = Matrix4::camera(Vector3(-20, 50, 0), Vector3(0, 20.0f, 0), Vector3(1,0,0));
 	Matrix4 lightViewProjection = lightView * lightProject;
 	glUniform3fv(fomShaderUniformIndex_cameraX, 1, Vector3(lightView.m11, lightView.m21, lightView.m31));
 	glUniform3fv(fomShaderUniformIndex_cameraY, 1, Vector3(lightView.m12, lightView.m22, lightView.m32));
