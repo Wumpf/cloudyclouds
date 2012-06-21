@@ -5,7 +5,7 @@
 
 
 std::unique_ptr<unsigned char[]> PerlinNoiseGenerator::generate(unsigned int width, unsigned int height, unsigned int depth,
-														float Frequency, float Amplitude, float Persistance, int Octaves, float threshhold)
+														float Frequency, float Amplitude, float Persistance, unsigned int Octaves, float threshhold)
 {
 	unsigned int numValues = width*height*depth;
 	std::unique_ptr<float[]> perlinNoiseFloat(new float[numValues]);
@@ -43,21 +43,21 @@ std::unique_ptr<unsigned char[]> PerlinNoiseGenerator::generate(unsigned int wid
 					int Y2 = ((int)yfreq + height - 1) % height;
 					int Z2 = ((int)zfreq + depth - 1) % depth;
 
-					/*float finalValue = 0.0f;
+				/*	float finalValue = 0.0f;
 					finalValue += FractionX * FractionY				* whiteNoise[index(X1, Y1, Z1)];
 					finalValue += FractionX * (1 - FractionY)		* whiteNoise[index(X1, Y2, Z1)];
 					finalValue += (1 - FractionX) * FractionY		* whiteNoise[index(X2, Y1, Z1)];
-					finalValue += (1 - FractionX) * (1 - FractionY) * whiteNoise[index(X2, Y2, Z1)];*/
-
+					finalValue += (1 - FractionX) * (1 - FractionY) * whiteNoise[index(X2, Y2, Z1)];
+					*/
 					float a = interpolateBilinear(whiteNoise[index(X1, Y1, Z2)], whiteNoise[index(X2, Y1, Z2)],
 													whiteNoise[index(X1, Y2, Z2)], whiteNoise[index(X2, Y2, Z2)],
 													FractionX, FractionY);
-					float b = interpolateBilinear(whiteNoise[index(X1, Y1, Z1)], whiteNoise[index(X2, Y1, Z1)],
+				/*	float b = interpolateBilinear(whiteNoise[index(X1, Y1, Z1)], whiteNoise[index(X2, Y1, Z1)],
 												  whiteNoise[index(X1, Y2, Z1)], whiteNoise[index(X2, Y2, Z1)],
 													FractionX, FractionY);
-					float finalValue = interpolateLinear(b, a, FractionZ);
+					float finalValue = interpolateLinear(b, a, FractionZ);*/
 
-					perlinNoiseFloat[index(x,y,z)] += finalValue;
+					perlinNoiseFloat[index(x,y,z)] += a;// finalValue;
 				}
 			}
 		}
@@ -81,8 +81,83 @@ std::unique_ptr<unsigned char[]> PerlinNoiseGenerator::generate(unsigned int wid
 	for(unsigned int i=0; i<numValues; ++i)
 	{
 		float f = (perlinNoiseFloat[i] - min) / area;
-		f = (f - threshhold) / (1.0 - threshhold);
+		f = (f - threshhold) / (1.0f - threshhold);
 		if(f<0) f = 0.0f;
+		perlinNoise[i] = (unsigned char)(f * 255);
+	}
+
+	return perlinNoise;
+}
+
+std::unique_ptr<unsigned char[]> PerlinNoiseGenerator::generate(unsigned int width, unsigned int height, 
+														float Frequency, float Amplitude, float Persistance, unsigned int Octaves, float threshhold)
+{
+	unsigned int numValues = width*height;
+	std::unique_ptr<float[]> perlinNoiseFloat(new float[numValues]);
+	std::unique_ptr<float[]> whiteNoise(new float[numValues]);
+
+	// generate white noise
+	for(unsigned int i=0; i<numValues; ++i)
+	{
+		whiteNoise[i] = random(-1.0f, 1.0f);
+		perlinNoiseFloat[i] = 0.0f;
+	}
+
+	#undef index
+	#define index(__x,__y) ((__x) + (__y)*width)
+
+	// for every octave...
+	for(unsigned int i = 0; i < Octaves; ++i)
+    {
+		for(unsigned int y=0; y<height; ++y)
+		{
+			for(unsigned int x=0; x<width; ++x)
+			{
+				float xfreq = x * Frequency;
+				float yfreq = y * Frequency;
+
+				float FractionX = perlinInterpolation(xfreq - (int)xfreq);
+				float FractionY = perlinInterpolation(yfreq - (int)yfreq);
+				int X1 = ((int)xfreq + width) % width;
+				int X2 = ((int)xfreq + width - 1) % width;
+				int Y1 = ((int)yfreq + height) % height;
+				int Y2 = ((int)yfreq + height - 1) % height;
+
+				float finalValue = 0.0f;
+				finalValue += FractionX * FractionY				* whiteNoise[index(X1, Y1)];
+				finalValue += FractionX * (1 - FractionY)		* whiteNoise[index(X1, Y2)];
+				finalValue += (1 - FractionX) * FractionY		* whiteNoise[index(X2, Y1)];
+				finalValue += (1 - FractionX) * (1 - FractionY) * whiteNoise[index(X2, Y2)];
+				perlinNoiseFloat[index(x,y)] += finalValue;
+			}
+		}
+
+		Frequency *= 2.0f;
+        Amplitude *= Persistance;
+	}
+
+	return toByte(perlinNoiseFloat.get(), numValues, threshhold);
+}
+
+std::unique_ptr<unsigned char[]> PerlinNoiseGenerator::toByte(float* data, unsigned int size, float threshhold)
+{
+	std::unique_ptr<unsigned char[]> perlinNoise(new unsigned char[size]);
+
+	float min = std::numeric_limits<float>::infinity();
+	float max = -std::numeric_limits<float>::infinity();
+	for(unsigned int i=0; i<size; ++i)
+	{
+		min = std::min(min, data[i]);
+		max = std::max(max, data[i]);
+	}
+	float area = max - min;
+
+
+	for(unsigned int i=0; i<size; ++i)
+	{
+		float f = (data[i] - min) / area;
+		//f = (f - threshhold) / (1.0 - threshhold);
+		//if(f<0) f = 0.0f;
 		perlinNoise[i] = (unsigned char)(f * 255);
 	}
 

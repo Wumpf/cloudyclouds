@@ -1,7 +1,7 @@
 #version 330
 
 // uniforms
-uniform sampler3D VolumeTexture;
+uniform sampler2D NoiseTexture;
 
 // input
 in vec2 gs_out_internPos;
@@ -18,10 +18,10 @@ const float twoPI = 6.28318531;
 void main()
 {	
 	float inverseAlpha = dot(gs_out_internPos, gs_out_internPos);
-	if(inverseAlpha > 1.0)
-		discard;
+	//if(inverseAlpha > 1.0)
+	//	discard;
 
-	inverseAlpha = 1.0f - (1.0f - inverseAlpha) * textureLod(VolumeTexture, vec3((gs_out_internPos+vec2(1.0, 1.0))*0.5, 0), 0).r;
+	inverseAlpha = 1.0f - (1.0f - inverseAlpha) * texture(NoiseTexture, (gs_out_internPos+vec2(1.0, 1.0))*0.5).r;
 
 	float twoPi_depth = twoPI * gs_out_Depth;
 	

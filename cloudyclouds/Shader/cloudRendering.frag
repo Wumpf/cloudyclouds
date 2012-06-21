@@ -2,7 +2,7 @@
 
 // uniforms
 uniform mat4 LightViewProjection;
-uniform sampler3D VolumeTexture;
+uniform sampler2D NoiseTexture;
 uniform sampler2D FOMSampler0;
 uniform sampler2D FOMSampler1;
 
@@ -22,10 +22,10 @@ out vec4 fragColor;
 void main()
 {	
 	float alpha = (1.0 - dot(gs_out_internPos,gs_out_internPos)) * gs_out_Alpha;
-	if(alpha <= 0.001)
-		discard;
+	//if(alpha <= 0.001)
+	//	discard;
 
-	alpha *= textureLod(VolumeTexture, vec3((gs_out_internPos+vec2(1.0, 1.0))*0.5, 0), 0).r - 0.5;
+	alpha *= texture(NoiseTexture, (gs_out_internPos+vec2(1.0, 1.0))*0.5).r;
 
 	vec4 posFOM = LightViewProjection * vec4(gs_out_worldPos, 1.0);
 	vec2 texcoordFOM = ((posFOM.xy / posFOM.w) + vec2(1.0, 1.0)) / 2.0;
