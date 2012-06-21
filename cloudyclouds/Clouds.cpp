@@ -12,7 +12,7 @@
 #include <stb_image.h>
 
 const char* Clouds::transformFeedbackVaryings[] = { "vs_out_position", "vs_out_size", "vs_out_remainingLifeTime", "vs_out_depthviewspace" };
-const unsigned int Clouds::maxNumCloudParticles = 4000;//16384;
+const unsigned int Clouds::maxNumCloudParticles = 6000;//16384;
 const unsigned int Clouds::fourierOpacityMapSize = 1024;
 const unsigned int Clouds::noiseTextureSize = 512;
 
@@ -83,7 +83,6 @@ void Clouds::shaderSetup()
 	renderingShaderUniformIndex_lightFarPlane = glGetUniformLocation(renderingShader->getProgram(), "LightFarPlane");
 
 
-
 	glUniform1i(glGetUniformLocation(renderingShader->getProgram(), "NoiseTexture"), 0);
 	glUniform1i(glGetUniformLocation(renderingShader->getProgram(), "FOMSampler0"), 1);
 	glUniform1i(glGetUniformLocation(renderingShader->getProgram(), "FOMSampler1"), 2);
@@ -96,10 +95,17 @@ void Clouds::fboSetup()
 	// Data Stuff
 		// textures
 	glGenTextures(2, fourierOpacityMap_Textures);
+
 	glBindTexture(GL_TEXTURE_2D, fourierOpacityMap_Textures[0]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, fourierOpacityMapSize, fourierOpacityMapSize, 0, GL_RGBA, GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
 	glBindTexture(GL_TEXTURE_2D, fourierOpacityMap_Textures[1]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, fourierOpacityMapSize, fourierOpacityMapSize, 0, GL_RGBA, GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 		// depth buffer
@@ -129,10 +135,6 @@ void Clouds::samplerSetup()
 	glSamplerParameteri(linearSampler_noMipMaps, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glSamplerParameteri(linearSampler_noMipMaps, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glSamplerParameteri(linearSampler_noMipMaps, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-		// bind to all used stages
-	glBindSampler(0, linearSampler_noMipMaps);
-	glBindSampler(1, linearSampler_noMipMaps);
-	glBindSampler(2, linearSampler_noMipMaps);
 }
 
 void Clouds::bufferSetup()
@@ -204,8 +206,6 @@ void Clouds::noiseSetup()
 
 	glGenTextures(1, &noiseTexture);
 	glBindTexture(GL_TEXTURE_2D, noiseTexture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, TexSizeX, TexSizeX, 0, GL_RGBA, GL_UNSIGNED_BYTE, TextureData);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(TextureData);
@@ -248,7 +248,7 @@ void Clouds::display(float timeSinceLastFrame)
 	glBindVertexArray(vao_cloudParticleBuffer_Read);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, noiseTexture);
-
+	glBindSampler(0, linearSampler_noMipMaps);
 
 	// move clouds
 	glEnable(GL_RASTERIZER_DISCARD); 
@@ -295,6 +295,9 @@ void Clouds::display(float timeSinceLastFrame)
 	glBindTexture(GL_TEXTURE_2D, fourierOpacityMap_Textures[0]);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, fourierOpacityMap_Textures[1]);
+
+	glBindSampler(1, linearSampler_noMipMaps);
+	glBindSampler(2, linearSampler_noMipMaps);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cloudParticleRendering);

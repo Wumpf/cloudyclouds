@@ -44,9 +44,10 @@ void main()
 	// todo: alpha, viwer
 
 	// FOM
-	vec4 posFOM = (LightViewProjection * vec4(gs_out_worldPos, 1.0) + vec4(1.0,1.0,1.0,1.0)) * 0.5;
-	vec4 coef0 = texture2DProj(FOMSampler0, posFOM, 0); 
-	vec4 coef1 = texture2DProj(FOMSampler1, posFOM, 0);
+	vec4 posFOM = (LightViewProjection * vec4(gs_out_worldPos, 1.0));
+	vec2 texcoordFOM = (posFOM.xy / posFOM.w + vec2(1.0, 1.0)) * vec2(0.5, 0.5);
+	vec4 coef0 = textureLod(FOMSampler0, texcoordFOM, 0); 
+	vec4 coef1 = textureLod(FOMSampler1, texcoordFOM, 0);
 	#define a0 coef0.x
 	#define a1 coef0.y
 	#define b1 coef0.z
@@ -57,7 +58,7 @@ void main()
 	float depth = -(LightView * vec4(gs_out_worldPos, 1.0)).z / LightFarPlane;
 	float twoPiDepth = twoPI * depth;
 	float shadowing = a0 / 2 * depth;
-	shadowing += (a1 * sin(twoPiDepth) +		  a2 * sin(twoPiDepth * 2) / 2  +		 a3 * sin(twoPiDepth * 3) / 3 +
+	shadowing += (a1 * sin(twoPiDepth) +	    a2 * sin(twoPiDepth * 2) / 2  +	     	 a3 * sin(twoPiDepth * 3) / 3 +
 				  b1 * (1.0-cos(twoPiDepth)) + b2 * (1.0-cos(twoPiDepth * 2)) / 2  +  b3 * (1.0-cos(twoPiDepth * 3)) / 3) 
 					/ twoPI;
 	shadowing = clamp(exp(-shadowing) + 0.3, 0.0, 1.0);

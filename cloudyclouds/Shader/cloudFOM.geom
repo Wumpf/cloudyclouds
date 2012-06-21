@@ -27,6 +27,9 @@ out float gs_out_Depth;
 
 void main()
 {
+	if(gl_PrimitiveIDIn != 0)
+	{
+
 	// culling
 	vec3 diag = (CameraRight + CameraUp) * vs_out_size[0];
 	vec4 uperRight =  LightViewProjection * vec4(vs_out_position[0] + diag, 1.0);
@@ -57,4 +60,30 @@ void main()
 	gs_out_texcoord = vec2(1.0, 1.0);
 	EmitVertex();
 	EndPrimitive();
+
+	}
+
+	else
+	{
+	gs_out_Alpha = 0.6;
+	gs_out_texcoord = vec2(0.5, 0.5);
+
+	// generate quad
+	vec3 pos = vec3(0,20,30);
+	gs_out_Depth = -(LightViewMatrix * vec4(pos, 1.0)).z / FarPlane;
+	gl_Position = LightViewProjection * vec4(pos, 1);
+	EmitVertex();
+
+	pos= vec3(30,20,0);
+	gs_out_Depth = -(LightViewMatrix * vec4(pos, 1.0)).z / FarPlane;
+	gl_Position = LightViewProjection * vec4(pos, 1);
+	EmitVertex();
+
+	pos = vec3(0,20,0);
+	gs_out_Depth = -(LightViewMatrix * vec4(pos, 1.0)).z / FarPlane;
+	gl_Position = LightViewProjection * vec4(pos, 1);
+	EmitVertex();
+	EndPrimitive();
+	
+	}
 }

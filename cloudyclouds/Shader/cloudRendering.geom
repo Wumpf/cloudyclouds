@@ -38,6 +38,9 @@ out float gs_out_Alpha;
 
 void main()
 {
+	if(gl_PrimitiveIDIn != 0)
+	{
+
 	// gen view aligned quad
 	// http://www.flipcode.com/archives/Billboarding-Excerpt_From_iReal-Time_Renderingi_2E.shtml
 
@@ -79,4 +82,26 @@ void main()
 	gs_out_texcoord = vec2(1.0, 1.0);
 	EmitVertex();
 	EndPrimitive();
+	}
+
+	else
+	{
+	gs_out_Alpha = 10000;
+	gs_out_texcoord = vec2(0.5, 0.5);
+
+	// generate quad
+	gs_out_worldPos = vec3(0,20,30);
+	gl_Position = ViewProjection * vec4(gs_out_worldPos, 1);
+	EmitVertex();
+
+	gs_out_worldPos = vec3(30,20,0);
+	gl_Position = ViewProjection * vec4(gs_out_worldPos, 1);
+	EmitVertex();
+
+	gs_out_worldPos = vec3(0,20,0);
+	gl_Position = ViewProjection * vec4(gs_out_worldPos, 1);
+	EmitVertex();
+	EndPrimitive();
+	
+	}
 }
