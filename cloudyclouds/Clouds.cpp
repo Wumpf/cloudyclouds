@@ -10,9 +10,9 @@
 #include <algorithm>
 
 const char* Clouds::transformFeedbackVaryings[] = { "vs_out_position", "vs_out_size", "vs_out_remainingLifeTime", "vs_out_depthviewspace" };
-const unsigned int Clouds::maxNumCloudParticles = 1000;//16384;
+const unsigned int Clouds::maxNumCloudParticles = 5000;//16384;
 const unsigned int Clouds::fourierOpacityMapSize = 1024;
-const unsigned int Clouds::noiseTextureSize = 128;
+const unsigned int Clouds::noiseTextureSize = 512;
 
 
 #ifndef BUFFER_OFFSET
@@ -77,6 +77,11 @@ void Clouds::shaderSetup()
 	blockIndex = glGetUniformBlockIndex(renderingShader->getProgram(), "View"); 
 	glUniformBlockBinding(renderingShader->getProgram(), blockIndex, 1);	// View binding=1
 	renderingShaderUniformIndex_lightViewProjection = glGetUniformLocation(renderingShader->getProgram(), "LightViewProjection");
+	renderingShaderUniformIndex_lightView = glGetUniformLocation(renderingShader->getProgram(), "LightView");
+	renderingShaderUniformIndex_lightFarPlane = glGetUniformLocation(renderingShader->getProgram(), "LightFarPlane");
+
+
+
 	glUniform1i(glGetUniformLocation(renderingShader->getProgram(), "NoiseTexture"), 0);
 	glUniform1i(glGetUniformLocation(renderingShader->getProgram(), "FOMSampler0"), 1);
 	glUniform1i(glGetUniformLocation(renderingShader->getProgram(), "FOMSampler1"), 2);
@@ -184,7 +189,7 @@ void Clouds::noiseSetup()
 {
 	glGenTextures(1, &noiseTexture);
 	glBindTexture(GL_TEXTURE_2D, noiseTexture);
-	auto noise = PerlinNoiseGenerator::get().generate(noiseTextureSize,noiseTextureSize, 0.006f, 0.3f, 0.2f, 4, 0.3f);
+	auto noise = PerlinNoiseGenerator::get().generate(noiseTextureSize,noiseTextureSize, 0.006f, 0.3f, 0.2f, 5, 0.3f);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, noiseTextureSize, noiseTextureSize, 0, GL_RED, GL_UNSIGNED_BYTE, noise.get());
 	glGenerateMipmap(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -241,14 +246,15 @@ void Clouds::display(float timeSinceLastFrame)
 	// render FOM
 	fomShader->useProgram();
 		// setup
-	Matrix4 lightProject = Matrix4::projectionOrthogonal(400, 400, 0, 500);
-	Matrix4 lightView = Matrix4::camera(Vector3(0, 150, 0), Vector3(00, 0, 0), Vector3(1,0,0));
+	float lightFarPlane = 300;
+	Matrix4 lightProject = Matrix4::projectionOrthogonal(300, 300, 0, lightFarPlane);
+	Matrix4 lightView = Matrix4::camera(Vector3(-25, 100, 0), Vector3(0, 30.0f, 0), Vector3(1,0,0));
 	Matrix4 lightViewProjection = lightView * lightProject;
 	glUniform3fv(fomShaderUniformIndex_cameraX, 1, Vector3(lightView.m11, lightView.m21, lightView.m31));
 	glUniform3fv(fomShaderUniformIndex_cameraY, 1, Vector3(lightView.m12, lightView.m22, lightView.m32));
 	glUniformMatrix4fv(fomShaderUniformIndex_lightViewProjection, 1, false, lightViewProjection);
 	glUniformMatrix4fv(fomShaderUniformIndex_lightViewMatrix, 1, false, lightView);
-	glUniform1f(fomShaderUniformIndex_farPlane, farPlaneDistance);
+	glUniform1f(fomShaderUniformIndex_farPlane, lightFarPlane);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_ONE);	// additive blending
@@ -266,6 +272,8 @@ void Clouds::display(float timeSinceLastFrame)
 	// render clouds
 	renderingShader->useProgram();
 	glUniformMatrix4fv(renderingShaderUniformIndex_lightViewProjection, 1, false, lightViewProjection);
+	glUniformMatrix4fv(renderingShaderUniformIndex_lightView, 1, false, lightView);
+	glUniform1f(renderingShaderUniformIndex_lightFarPlane, lightFarPlane);
 
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, fourierOpacityMap_Textures[0]);

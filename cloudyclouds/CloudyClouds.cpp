@@ -148,7 +148,9 @@ bool CloudyClouds::display(float timeSinceLastFrame)
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(float) * 2, timings);	// update view
 
 	// clear scene
+	glClearColor(0.4f, 0.4f, 0.8f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 	clouds->display(timeSinceLastFrame);
 

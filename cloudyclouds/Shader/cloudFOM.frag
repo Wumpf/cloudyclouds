@@ -17,14 +17,14 @@ const float twoPI = 6.28318531;
 
 void main()
 {	
-	float inverseAlpha = dot(gs_out_internPos, gs_out_internPos);
-	//if(inverseAlpha > 1.0)
-	//	discard;
+	float alpha = (1.0 - dot(gs_out_internPos,gs_out_internPos)) * gs_out_Alpha;
+	if(alpha < 0.001)
+		discard;
 
-	inverseAlpha = 1.0f - (1.0f - inverseAlpha) * texture(NoiseTexture, (gs_out_internPos+vec2(1.0, 1.0))*0.5).r;
+	//alpha *= texture(NoiseTexture, (gs_out_internPos+vec2(1.0, 1.0))*0.5).r;
 
-	float twoPi_depth = twoPI * gs_out_Depth;
-	
+	float inverseAlpha = 1.0 - alpha;
+
 	#define a0 coef0.x
 	#define a1 coef0.y
 	#define b1 coef0.z
@@ -33,18 +33,19 @@ void main()
 	#define a3 coef1.y
 	#define b3 coef1.z
 
+	float twoPi_depth = twoPI * gs_out_Depth;
 	a0 = -2.0 * log(inverseAlpha);
 
 	a1 = cos(twoPi_depth);
 	b1 = sin(twoPi_depth);
 
-	a2 = a1*b1*2;		//cos(twoPi_depth * 2);
-	b2 = b1*b1 + a1*a1; //sin(twoPi_depth * 2);
+	a2 =/* a1*b1*2;*/		cos(twoPi_depth * 2);
+	b2 =/* b1*b1 + a1*a1;*/ sin(twoPi_depth * 2);
 
-	a3 = b2*a1 + a2*b1; //cos(twoPi_depth * 3);
-	b3 = a2*a1 + b2*b1; //sin(twoPi_depth * 3);
+	a3 =/* b2*a1 + a2*b1;*/ cos(twoPi_depth * 3);
+	b3 =/* a2*a1 + b2*b1;*/ sin(twoPi_depth * 3);
 
     coef0.yzw *= a0;
 	coef1.xyz *= a0;
-	coef1.w = gs_out_Depth;
+	coef1.w = 0.0;
 }

@@ -22,6 +22,7 @@ layout(std140) uniform View
 
 // constants
 const float alphaBlendLength = 0.8;
+const float maxAlpha = 0.4;
 
 // input
 in vec3 vs_out_position[1];
@@ -56,7 +57,7 @@ void main()
 
 
 	// alpha
-	gs_out_Alpha = min(vs_out_remainingLifeTime[0] / alphaBlendLength, 1.0);
+	gs_out_Alpha = min(vs_out_remainingLifeTime[0] / alphaBlendLength, maxAlpha);
 	//gs_out_depth = vs_out_depthviewspace[0] * 0.1;
 
 	// generate quad

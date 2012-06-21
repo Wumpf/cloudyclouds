@@ -38,6 +38,8 @@ private:
 	GLuint fomShaderUniformIndex_farPlane;
 	// rendering shader unifrom indices
 	GLuint renderingShaderUniformIndex_lightViewProjection;
+	GLuint renderingShaderUniformIndex_lightView;
+	GLuint renderingShaderUniformIndex_lightFarPlane;
 
 
 	// cloud particle data

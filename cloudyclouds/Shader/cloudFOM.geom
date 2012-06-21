@@ -13,6 +13,7 @@ uniform vec3 CameraUp;
 
 // constants
 const float alphaBlendLength = 0.8;
+const float maxAlpha = 0.4;
 
 // input
 in vec3 vs_out_position[1];
@@ -37,9 +38,9 @@ void main()
 	   return;
 
 	// alpha
-	gs_out_Alpha = min(vs_out_remainingLifeTime[0] / alphaBlendLength, 1.0);
+	gs_out_Alpha = min(vs_out_remainingLifeTime[0] / alphaBlendLength, maxAlpha);
 	// depth
-	gs_out_Depth = (LightViewMatrix * vec4(vs_out_position[0], 1.0)).z / FarPlane;	// \todo transposing matrices and swaping matrices could save some ops
+	gs_out_Depth = -(LightViewMatrix * vec4(vs_out_position[0], 1.0)).z / FarPlane;	// \todo transposing matrices and swaping matrices could save some ops
 
 	// generate quad
 	gl_Position.zw = vec2(uperRight.z / uperRight.w, 1.0);

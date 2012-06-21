@@ -156,8 +156,9 @@ std::unique_ptr<unsigned char[]> PerlinNoiseGenerator::toByte(float* data, unsig
 	for(unsigned int i=0; i<size; ++i)
 	{
 		float f = (data[i] - min) / area;
-		//f = (f - threshhold) / (1.0 - threshhold);
-		//if(f<0) f = 0.0f;
+		f = (f - threshhold) / (1.0 - threshhold);
+		if(f<0)
+			f = 0.0f;
 		perlinNoise[i] = (unsigned char)(f * 255);
 	}
 
