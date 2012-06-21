@@ -18,6 +18,7 @@ layout(std140) uniform View
 	vec3 CameraPosition;
 	vec3 CameraRight;
 	vec3 CameraUp;
+	vec3 CameraDir;
 };
 
 // constants

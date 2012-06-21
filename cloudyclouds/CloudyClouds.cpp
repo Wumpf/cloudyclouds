@@ -92,7 +92,7 @@ void CloudyClouds::InitUBOs()
 	// view ubo
 	glGenBuffers(1, &uboView);
 	glBindBuffer(GL_UNIFORM_BUFFER, uboView); 
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(float) * 4 * 11, NULL, GL_STREAM_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(float) * 4 * 12, NULL, GL_STREAM_DRAW);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboView);	// bind to index 1 - its assumed that ubo-index1-binding will never change
 
 	// timings ubo
@@ -141,6 +141,8 @@ bool CloudyClouds::display(float timeSinceLastFrame)
 	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * 4*4 *2, sizeof(float) * 3, camera->getPosition());
 	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * (4*4 *2 + 4), sizeof(float) * 3, Vector3(camera->getViewMatrix().m11, camera->getViewMatrix().m21, camera->getViewMatrix().m31));
 	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * (4*4 *2 + 8), sizeof(float) * 3, Vector3(camera->getViewMatrix().m12, camera->getViewMatrix().m22, camera->getViewMatrix().m32));
+	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * (4*4 *2 + 12), sizeof(float) * 3, -Vector3(camera->getViewMatrix().m13, camera->getViewMatrix().m23, camera->getViewMatrix().m33));
+
 
 	// update timings
 	glBindBuffer(GL_UNIFORM_BUFFER, uboTimings);

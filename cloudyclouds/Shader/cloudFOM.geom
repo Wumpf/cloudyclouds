@@ -23,7 +23,6 @@ in float vs_out_remainingLifeTime[1];
 // output
 out vec2 gs_out_texcoord;
 out float gs_out_Alpha;
-out float gs_out_Depth;
 
 void main()
 {
@@ -42,8 +41,6 @@ void main()
 
 	// alpha
 	gs_out_Alpha = min(vs_out_remainingLifeTime[0] / alphaBlendLength, maxAlpha);
-	// depth
-	gs_out_Depth = -(LightViewMatrix * vec4(vs_out_position[0], 1.0)).z / FarPlane;	// \todo transposing matrices and swaping matrices could save some ops
 
 	// generate quad
 	gl_Position.zw = vec2(uperRight.z / uperRight.w, 1.0);
@@ -70,17 +67,14 @@ void main()
 
 	// generate quad
 	vec3 pos = vec3(0,20,30);
-	gs_out_Depth = -(LightViewMatrix * vec4(pos, 1.0)).z / FarPlane;
 	gl_Position = LightViewProjection * vec4(pos, 1);
 	EmitVertex();
 
 	pos= vec3(30,20,0);
-	gs_out_Depth = -(LightViewMatrix * vec4(pos, 1.0)).z / FarPlane;
 	gl_Position = LightViewProjection * vec4(pos, 1);
 	EmitVertex();
 
 	pos = vec3(0,20,0);
-	gs_out_Depth = -(LightViewMatrix * vec4(pos, 1.0)).z / FarPlane;
 	gl_Position = LightViewProjection * vec4(pos, 1);
 	EmitVertex();
 	EndPrimitive();

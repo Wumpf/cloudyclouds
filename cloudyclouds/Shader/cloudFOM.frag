@@ -5,8 +5,8 @@ uniform sampler2D NoiseTexture;
 
 // input
 in vec2 gs_out_texcoord;
+in vec3 gs_out_worldPos;
 in float gs_out_Alpha;
-in float gs_out_Depth;
 
 // output
 layout(location = 0) out vec4 coef0;
@@ -22,6 +22,11 @@ void main()
 		discard;
 	float inverseAlpha = 1.0 - alpha;
 
+	// sphere position
+	vec2 toMid = vec2(0.5, 0.5) - gs_out_texcoord;
+	vec3 worldPos = gs_out_worldPos - sqrt(1 - dot(toMid, toMid)) * CameraDir;
+	float depth = -(LightViewMatrix * vec4(vs_out_position[0], 1.0)).z / FarPlane;	// \todo transposing matrices and swaping matrices could save some ops
+
 	#define a0 coef0.x
 	#define a1 coef0.y
 	#define b1 coef0.z
@@ -30,7 +35,7 @@ void main()
 	#define a3 coef1.y
 	#define b3 coef1.z
 
-	float twoPi_depth = twoPI * gs_out_Depth;
+	float twoPi_depth = twoPI * depth;
 	a0 = -2.0 * log(inverseAlpha);
 
 	a1 = cos(twoPi_depth);
@@ -44,5 +49,5 @@ void main()
 
     coef0.yzw *= a0;
 	coef1.xyz *= a0;
-	coef1.w = 0.0;
+	coef1.w = depth;
 }
