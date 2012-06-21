@@ -2,6 +2,9 @@
 
 // uniforms
 uniform sampler2D NoiseTexture;
+uniform vec4 LightDistancePlane_norm;
+uniform vec3 CameraDir;
+uniform float FarPlane;
 
 // input
 in vec2 gs_out_texcoord;
@@ -17,15 +20,15 @@ const float twoPI = 6.28318531;
 
 void main()
 {
-	float alpha = texture(NoiseTexture, gs_out_texcoord).a * gs_out_Alpha;
+	float tex = texture(NoiseTexture, gs_out_texcoord).a;
+	float alpha = tex * gs_out_Alpha;
 	if(alpha < 0.001)
 		discard;
 	float inverseAlpha = 1.0 - alpha;
 
 	// sphere position
-	vec2 toMid = vec2(0.5, 0.5) - gs_out_texcoord;
-	vec3 worldPos = gs_out_worldPos - sqrt(1 - dot(toMid, toMid)) * CameraDir;
-	float depth = -(LightViewMatrix * vec4(vs_out_position[0], 1.0)).z / FarPlane;	// \todo transposing matrices and swaping matrices could save some ops
+	vec3 worldPos = gs_out_worldPos;// - tex * CameraDir;
+	float depth = dot(LightDistancePlane_norm, vec4(worldPos, 1.0));	// \todo transposing matrices and swaping matrices could save some ops
 
 	#define a0 coef0.x
 	#define a1 coef0.y

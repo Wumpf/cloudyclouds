@@ -33,12 +33,13 @@ private:
 	// fom shader uniform indices
 	GLuint fomShaderUniformIndex_cameraX;
 	GLuint fomShaderUniformIndex_cameraY;
+	GLuint fomShaderUniformIndex_cameraZ;
 	GLuint fomShaderUniformIndex_lightViewProjection;
-	GLuint fomShaderUniformIndex_lightViewMatrix;
+	GLuint fomShaderUniformIndex_LightDistancePlane_norm;
 	GLuint fomShaderUniformIndex_farPlane;
 	// rendering shader unifrom indices
 	GLuint renderingShaderUniformIndex_lightViewProjection;
-	GLuint renderingShaderUniformIndex_lightView;
+	GLuint renderingShaderUniformIndex_LightDistancePlane_norm;
 	GLuint renderingShaderUniformIndex_lightFarPlane;
 
 
