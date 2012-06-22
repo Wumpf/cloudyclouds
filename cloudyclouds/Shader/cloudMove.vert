@@ -24,20 +24,21 @@ const float growthFactor = 2.5;
 const float windFactor = 0.3;
 const float thermicFactor = 0.1; 
 
-
 // input
 layout(location = 0) in vec3 vs_in_position;
-layout(location = 1) in float vs_in_size;
-layout(location = 2) in float vs_in_remainingLifeTime;
+layout(location = 1) in vec3 vs_in_size_time_rand;
 //layout(location = 3) in float vs_in_depth;
+#define vs_in_size					vs_in_size_time_rand.x
+#define vs_in_remainingLifeTime		vs_in_size_time_rand.y
+#define vs_in_rand					vs_in_size_time_rand.z
 
 // output
 out vec3 vs_out_position;
-out float vs_out_size;
-out float vs_out_remainingLifeTime;
+out vec3 vs_out_size_time_rand;
 out float vs_out_depthviewspace;		
-// optimization possibilty: separate buffers - depth in its own!
-// also some compression could be useful
+#define vs_out_size					vs_out_size_time_rand.x
+#define vs_out_remainingLifeTime	vs_out_size_time_rand.y
+#define vs_out_rand					vs_out_size_time_rand.z
 
 // random hash from
 // http://prideout.net/blog/?tag=transform-feedback
@@ -63,6 +64,7 @@ void main()
 		vs_out_position = spawnareaMin + vec3(randhash(seed, spawnareaSpan.x), randhash(++seed, spawnareaSpan.y), randhash(++seed, spawnareaSpan.z));
 		vs_out_remainingLifeTime = lifeTimeMin + randhash(++seed, lifeTimeSpan);
 		vs_out_size = 0;
+		vs_out_rand = randhash(++seed, 2.0) - 1.0;
 	}
 	else
 	{
@@ -73,6 +75,9 @@ void main()
 
 		// grow
 		vs_out_size = vs_in_size + frameTimeDelta * growthFactor / min(30, vs_in_size + 0.1);	// small particles grow fast!
+
+		// rand
+		vs_out_rand = vs_in_rand;
 	}
 
 	// depth output, culling

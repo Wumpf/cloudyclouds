@@ -52,8 +52,7 @@ private:
 	struct ParticleVertex
 	{
 		float position[3];
-		float size;
-		float lifetime;
+		float size_time_rand[3];
 		float depth;
 	};
 

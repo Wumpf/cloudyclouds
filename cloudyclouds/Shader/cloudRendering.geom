@@ -29,6 +29,7 @@ const float maxAlpha = 0.8;
 in vec3 vs_out_position[1];
 in float vs_out_size[1];
 in float vs_out_remainingLifeTime[1];
+in float vs_out_rand[1];
 //in float vs_out_depthviewspace[1];	// [-1, 1] depth
 
 // output
@@ -64,7 +65,7 @@ void main()
 	//gs_out_depth = vs_out_depthviewspace[0] * 0.1;
 
 	// texture animation
-	float rotation = vs_out_remainingLifeTime[0] * 0.08;
+	float rotation = vs_out_remainingLifeTime[0] * 0.08 * sign(vs_out_rand) + vs_out_rand * PI;
 	float cosRot = cos(rotation) * 0.5;
 	float sinRot = sin(rotation) * 0.5;
 	vec2 texRight	= vec2(cosRot, -sinRot);

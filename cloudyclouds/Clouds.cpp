@@ -11,7 +11,7 @@
 
 #include <stb_image.h>
 
-const char* Clouds::transformFeedbackVaryings[] = { "vs_out_position", "vs_out_size", "vs_out_remainingLifeTime", "vs_out_depthviewspace" };
+const char* Clouds::transformFeedbackVaryings[] = { "vs_out_position", "vs_out_size_time_rand", "vs_out_depthviewspace" };
 const unsigned int Clouds::maxNumCloudParticles = 2000;//16384;
 const unsigned int Clouds::fourierOpacityMapSize = 512;
 //const unsigned int Clouds::noiseTextureSize = 512;
@@ -25,7 +25,7 @@ Clouds::Clouds(unsigned int screenResolutionX, unsigned int screenResolutionY, f
 	screenResolutionX(screenResolutionX),
 	screenResolutionY(screenResolutionY),
 	farPlaneDistance(farPlaneDistance),
-	moveShader(new ShaderObject("Shader\\cloudMove.vert", "", "", transformFeedbackVaryings, 4)),
+	moveShader(new ShaderObject("Shader\\cloudMove.vert", "", "", transformFeedbackVaryings, 3)),
 	fomShader(new ShaderObject("Shader\\cloudPassThrough.vert", "Shader\\cloudFOM.frag", "Shader\\cloudFOM.geom")),
 	renderingShader(new ShaderObject("Shader\\cloudPassThrough.vert", "Shader\\cloudRendering.frag", "Shader\\cloudRendering.geom")),
 	particleVertexBuffer(new ParticleVertex[maxNumCloudParticles]),
@@ -140,8 +140,7 @@ void Clouds::bufferSetup()
 {
 	// data objects
 		// init with random lifetimes as seed
-	for(int i=0; i<maxNumCloudParticles; ++i)
-		particleVertexBuffer[i].lifetime = -1.0f;
+	memset(particleVertexBuffer.get(), 0, sizeof(ParticleVertex) * maxNumCloudParticles);
 
 	glGenBuffers(1, &vbo_cloudParticleBuffer_Read);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_cloudParticleBuffer_Read);
@@ -174,15 +173,13 @@ void Clouds::bufferSetup()
 		glBindVertexArray(*vao[i]);
 			glBindBuffer(GL_ARRAY_BUFFER, *vbo[i]);
 			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(ParticleVertex), BUFFER_OFFSET(0));		// position
-			glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, sizeof(ParticleVertex), BUFFER_OFFSET(3*sizeof(float))); // size
-			glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(ParticleVertex), BUFFER_OFFSET(4*sizeof(float))); // lifetime
-			glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(ParticleVertex), BUFFER_OFFSET(5*sizeof(float))); // depth
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(ParticleVertex), BUFFER_OFFSET(3*sizeof(float))); // size/lifetime/rand
+			glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(ParticleVertex), BUFFER_OFFSET(6*sizeof(float))); // depth
 
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 			glEnableVertexAttribArray(0);
 			glEnableVertexAttribArray(1);
 			glEnableVertexAttribArray(2);
-			glEnableVertexAttribArray(3);
 		glBindVertexArray(0);
 		checkGLError("cloudVAO");
 	}
