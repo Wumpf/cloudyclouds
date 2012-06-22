@@ -59,28 +59,35 @@ void main()
 	vec4 lowerLeft_clip = ViewProjection * vec4(lowerLeft_world, 1.0);
 	vec4 screenCorMinMax = vec4(uperRight_clip.xy / uperRight_clip.w, lowerLeft_clip.xy / lowerLeft_clip.w);
 
-
 	// alpha
 	gs_out_Alpha = min(vs_out_remainingLifeTime[0] / alphaBlendLength, maxAlpha);
 	//gs_out_depth = vs_out_depthviewspace[0] * 0.1;
+
+	// texture animation
+	float rotation = vs_out_remainingLifeTime[0] * 0.08;
+	float cosRot = cos(rotation) * 0.5;
+	float sinRot = sin(rotation) * 0.5;
+	vec2 texRight	= vec2(cosRot, -sinRot);
+	vec2 texUp		= vec2(sinRot, cosRot);
+	vec2 texDiag	= texRight + texUp;
 
 	// generate quad
 	gl_Position.zw = vec2(uperRight_clip.z / uperRight_clip.w, 1.0);
 	gl_Position.xy = screenCorMinMax.xy;
 	gs_out_worldPos = uperRight_world;
-	gs_out_texcoord = vec2(0.0, 0.0);
+	gs_out_texcoord = -texDiag + vec2(0.5,0.5);
 	EmitVertex();
 	gl_Position.xy = screenCorMinMax.xw;
 	gs_out_worldPos = vs_out_position[0] + right - up;
-	gs_out_texcoord = vec2(0.0, 1.0);
+	gs_out_texcoord = texRight - texUp + vec2(0.5,0.5);
 	EmitVertex();
 	gl_Position.xy = screenCorMinMax.zy;
 	gs_out_worldPos = vs_out_position[0] - right + up;
-	gs_out_texcoord = vec2(1.0, 0.0);
+	gs_out_texcoord = -texRight + texUp + vec2(0.5,0.5);
 	EmitVertex();
 	gl_Position.xy = screenCorMinMax.zw;
 	gs_out_worldPos = lowerLeft_world;
-	gs_out_texcoord = vec2(1.0, 1.0);
+	gs_out_texcoord = texDiag + vec2(0.5,0.5);
 	EmitVertex();
 	EndPrimitive();
 	/*}

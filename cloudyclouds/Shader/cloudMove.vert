@@ -16,13 +16,13 @@ layout(std140) uniform Timings
 };
 
 // constants
-const vec3 spawnareaMin = vec3(-50, -50, -50);
-const vec3 spawnareaSpan = vec3(100, 50, 100);
+const vec3 spawnareaMin = vec3(-100, -20, -100);
+const vec3 spawnareaSpan = vec3(200, 20, 200);
 const float lifeTimeMin = 2.0;
 const float lifeTimeSpan = 15.0;
-const float growthFactor = 1.0; 
-const float windFactor = 1.1;
-const float thermicFactor = 0.2; 
+const float growthFactor = 2.5; 
+const float windFactor = 0.3;
+const float thermicFactor = 0.1; 
 
 
 // input
@@ -72,7 +72,7 @@ void main()
 		vs_out_position.y += frameTimeDelta * thermicFactor;
 
 		// grow
-		vs_out_size = vs_in_size + frameTimeDelta * growthFactor / min(20, vs_in_size + 0.2);
+		vs_out_size = vs_in_size + frameTimeDelta * growthFactor / min(30, vs_in_size + 0.1);	// small particles grow fast!
 	}
 
 	// depth output, culling

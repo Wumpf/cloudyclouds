@@ -36,12 +36,9 @@ private:
 	GLuint fomShaderUniformIndex_cameraZ;
 	GLuint fomShaderUniformIndex_lightViewProjection;
 	GLuint fomShaderUniformIndex_LightDistancePlane_norm;
-	GLuint fomShaderUniformIndex_farPlane;
 	// rendering shader unifrom indices
 	GLuint renderingShaderUniformIndex_lightViewProjection;
 	GLuint renderingShaderUniformIndex_LightDistancePlane_norm;
-	GLuint renderingShaderUniformIndex_lightFarPlane;
-
 
 	// cloud particle data
 	GLuint vbo_cloudParticleBuffer_Read;
