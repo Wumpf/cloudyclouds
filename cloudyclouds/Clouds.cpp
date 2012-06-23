@@ -25,10 +25,10 @@ Clouds::Clouds(unsigned int screenResolutionX, unsigned int screenResolutionY, f
 	screenResolutionX(screenResolutionX),
 	screenResolutionY(screenResolutionY),
 	farPlaneDistance(farPlaneDistance),
-	moveShader(new ShaderObject("Shader\\cloudMove.vert", "", "", transformFeedbackVaryings, 3)),
+	moveShader(new ShaderObject("Shader\\cloudMove.vert", "", "", transformFeedbackVaryings, 3, false)),
 	fomShader(new ShaderObject("Shader\\cloudPassThrough.vert", "Shader\\cloudFOM.frag", "Shader\\cloudFOM.geom")),
 	renderingShader(new ShaderObject("Shader\\cloudPassThrough.vert", "Shader\\cloudRendering.frag", "Shader\\cloudRendering.geom")),
-	particleVertexBuffer(new ParticleVertex[maxNumCloudParticles]),
+	particleDepthBuffer(new float[maxNumCloudParticles]),
 	particleIndexBuffer(new unsigned short[maxNumCloudParticles])
 {
 	shaderSetup();
@@ -46,8 +46,12 @@ Clouds::~Clouds()
 	glDeleteSamplers(1, &linearSampler_noMipMaps);
 	glDeleteVertexArrays(1, &vao_cloudParticleBuffer_Read);
 	glDeleteVertexArrays(1, &vao_cloudParticleBuffer_Write);
-	glDeleteBuffers(1, &vbo_cloudParticleBuffer_Read);
-	glDeleteBuffers(1, &vbo_cloudParticleBuffer_Write);
+	glDeleteBuffers(1, &vbo_cloudParticleBuffer_Read[0]);
+	glDeleteBuffers(1, &vbo_cloudParticleBuffer_Write[0]);
+	glDeleteBuffers(1, &vbo_cloudParticleBuffer_Read[1]);
+	glDeleteBuffers(1, &vbo_cloudParticleBuffer_Write[1]);
+	glDeleteBuffers(1, &vbo_cloudParticleBuffer_Read[2]);
+	glDeleteBuffers(1, &vbo_cloudParticleBuffer_Write[2]);
 	glDeleteBuffers(1, &ibo_cloudParticleRendering);
 	glDeleteBuffers(1, &noiseTexture);
 }
@@ -140,19 +144,29 @@ void Clouds::bufferSetup()
 {
 	// data objects
 		// init with random lifetimes as seed
-	memset(particleVertexBuffer.get(), 0, sizeof(ParticleVertex) * maxNumCloudParticles);
+	std::unique_ptr<float[]> startValues(new float[maxNumCloudParticles*3]);
+	memset(startValues.get(), 0, sizeof(float) * maxNumCloudParticles * 3);
 
-	glGenBuffers(1, &vbo_cloudParticleBuffer_Read);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_cloudParticleBuffer_Read);
-		glBufferData(GL_ARRAY_BUFFER, maxNumCloudParticles * sizeof(ParticleVertex), particleVertexBuffer.get(), GL_STATIC_READ);	// static read!
+	glGenBuffers(3, vbo_cloudParticleBuffer_Read);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_cloudParticleBuffer_Read[0]);
+	glBufferData(GL_ARRAY_BUFFER, maxNumCloudParticles * sizeof(float) * 3, 0, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_cloudParticleBuffer_Read[1]);
+	glBufferData(GL_ARRAY_BUFFER, maxNumCloudParticles * sizeof(float) * 3, startValues.get(), GL_STATIC_DRAW);	
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_cloudParticleBuffer_Read[2]);
+	glBufferData(GL_ARRAY_BUFFER, maxNumCloudParticles * sizeof(float) * 1, 0, GL_STATIC_READ);	// static read!
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	checkGLError("cloudVBO1");
 
-	glGenBuffers(1, &vbo_cloudParticleBuffer_Write);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_cloudParticleBuffer_Write);
-		glBufferData(GL_ARRAY_BUFFER, maxNumCloudParticles * sizeof(ParticleVertex), nullptr, GL_STATIC_READ);	// static read!
+	glGenBuffers(3, vbo_cloudParticleBuffer_Write);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_cloudParticleBuffer_Write[0]);
+	glBufferData(GL_ARRAY_BUFFER, maxNumCloudParticles * sizeof(float) * 3, 0, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_cloudParticleBuffer_Write[1]);
+	glBufferData(GL_ARRAY_BUFFER, maxNumCloudParticles * sizeof(float) * 3, startValues.get(), GL_STATIC_DRAW);	
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_cloudParticleBuffer_Write[2]);
+	glBufferData(GL_ARRAY_BUFFER, maxNumCloudParticles * sizeof(float) * 1, 0, GL_STATIC_READ);	// static read!
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	checkGLError("cloudVBO2");
+	checkGLError("cloudVBO1");
+
 
 
 	// ibo
@@ -160,29 +174,42 @@ void Clouds::bufferSetup()
 		particleIndexBuffer[i] = i;
 	glGenBuffers(1, &ibo_cloudParticleRendering);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cloudParticleRendering);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 2*maxNumCloudParticles, particleIndexBuffer.get(), GL_STREAM_DRAW);	// stream draw!
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 2*maxNumCloudParticles, particleIndexBuffer.get(), GL_DYNAMIC_DRAW);	// dynamic draw! often writen, often rendered, never read (http://wiki.delphigl.com/index.php/glBufferData)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 
 	// generate vao for cloud particles (2 for ping/pong)
-	GLuint* vbo[] = { &vbo_cloudParticleBuffer_Read, &vbo_cloudParticleBuffer_Write };
-	GLuint* vao[] = { &vao_cloudParticleBuffer_Read, &vao_cloudParticleBuffer_Write };
-	for(int i=0; i<2; ++i)
-	{ 
-		glGenVertexArrays(1, vao[i]);
-		glBindVertexArray(*vao[i]);
-			glBindBuffer(GL_ARRAY_BUFFER, *vbo[i]);
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(ParticleVertex), BUFFER_OFFSET(0));		// position
-			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(ParticleVertex), BUFFER_OFFSET(3*sizeof(float))); // size/lifetime/rand
-			glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(ParticleVertex), BUFFER_OFFSET(6*sizeof(float))); // depth
+	glGenVertexArrays(1, &vao_cloudParticleBuffer_Read);
+	glBindVertexArray(vao_cloudParticleBuffer_Read);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_cloudParticleBuffer_Read[0]);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, BUFFER_OFFSET(0));	// position
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_cloudParticleBuffer_Read[1]);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, BUFFER_OFFSET(0));	// size/lifetime/rand
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_cloudParticleBuffer_Read[2]);
+		glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(float), BUFFER_OFFSET(0));	// depth
 
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
-			glEnableVertexAttribArray(0);
-			glEnableVertexAttribArray(1);
-			glEnableVertexAttribArray(2);
-		glBindVertexArray(0);
-		checkGLError("cloudVAO");
-	}
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
+	glBindVertexArray(0);
+	checkGLError("cloudVAO_Read");
+
+	glGenVertexArrays(1, &vao_cloudParticleBuffer_Write);
+	glBindVertexArray(vao_cloudParticleBuffer_Write);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_cloudParticleBuffer_Write[0]);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, BUFFER_OFFSET(0));	// position
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_cloudParticleBuffer_Write[1]);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, BUFFER_OFFSET(0));	// size/lifetime/rand
+		glBindBuffer(GL_ARRAY_BUFFER, vbo_cloudParticleBuffer_Write[2]);
+		glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(float), BUFFER_OFFSET(0));	// depth
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
+	glBindVertexArray(0);
+	checkGLError("cloudVAO_Write");
 }
 
 void Clouds::noiseSetup()
@@ -209,18 +236,18 @@ void Clouds::noiseSetup()
 
 void Clouds::particleSorting()
 {
-	// read vbo
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_cloudParticleBuffer_Write);
-	glGetBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(ParticleVertex) * maxNumCloudParticles, particleVertexBuffer.get());
+	// read depth vbo
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_cloudParticleBuffer_Write[2]);
+	glGetBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * maxNumCloudParticles, particleDepthBuffer.get());
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// sort by depth
 	std::sort(particleIndexBuffer.get(), particleIndexBuffer.get() + maxNumCloudParticles, 
-				[&](size_t i, size_t j) { return particleVertexBuffer[i].depth > particleVertexBuffer[j].depth; });
+				[&](size_t i, size_t j) { return particleDepthBuffer[i] > particleDepthBuffer[j]; });
 
 	// count num visible (the cloudMove.vert wrote a large depth value for all particles left/right/up/down/behind frustum)
 	unsigned int numParticlesInvalid = 0;
-	while(numParticlesInvalid < maxNumCloudParticles && particleVertexBuffer[particleIndexBuffer[numParticlesInvalid]].depth > farPlaneDistance)
+	while(numParticlesInvalid < maxNumCloudParticles && particleDepthBuffer[particleIndexBuffer[numParticlesInvalid]] > farPlaneDistance)
 		++numParticlesInvalid;
 	numParticlesRender = maxNumCloudParticles - numParticlesInvalid;
 
@@ -250,7 +277,9 @@ void Clouds::display(float timeSinceLastFrame)
 	// move clouds
 	glEnable(GL_RASTERIZER_DISCARD); 
 	moveShader->useProgram();
-	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, vbo_cloudParticleBuffer_Write);	// specify target
+	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, vbo_cloudParticleBuffer_Write[0]);	// specify targets
+	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 1, vbo_cloudParticleBuffer_Write[1]);	
+	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 2, vbo_cloudParticleBuffer_Write[2]);	
 	glBeginTransformFeedback(GL_POINTS);
 	glDrawArrays(GL_POINTS, 0, maxNumCloudParticles);
 	glEndTransformFeedback();
@@ -261,7 +290,7 @@ void Clouds::display(float timeSinceLastFrame)
 		// setup
 	float lightFarPlane = 300;
 	Matrix4 lightProject = Matrix4::projectionOrthogonal(300, 300, 0, lightFarPlane);
-	Matrix4 lightView = Matrix4::camera(Vector3(cosf(glfwGetTime()*0.1)*20, 100, sinf(glfwGetTime()*0.1)*20), Vector3(0, 0, 0), Vector3(1,0,0));
+	Matrix4 lightView = Matrix4::camera(Vector3(cosf(glfwGetTime()*0.1f)*20, 100, sinf(glfwGetTime()*0.1f)*20), Vector3(0, 0, 0), Vector3(1,0,0));
 	Matrix4 lightViewProjection = lightView * lightProject;
 	glUniform3fv(fomShaderUniformIndex_cameraX, 1, Vector3(lightView.m11, lightView.m21, lightView.m31));
 	glUniform3fv(fomShaderUniformIndex_cameraY, 1, Vector3(lightView.m12, lightView.m22, lightView.m32));
@@ -318,5 +347,7 @@ void Clouds::display(float timeSinceLastFrame)
 
 	// rotate read/write buffer
 	swap(vao_cloudParticleBuffer_Read, vao_cloudParticleBuffer_Write);
-	swap(vbo_cloudParticleBuffer_Read, vbo_cloudParticleBuffer_Write);
+	swap(vbo_cloudParticleBuffer_Read[0], vbo_cloudParticleBuffer_Write[0]);
+	swap(vbo_cloudParticleBuffer_Read[1], vbo_cloudParticleBuffer_Write[1]);
+	swap(vbo_cloudParticleBuffer_Read[2], vbo_cloudParticleBuffer_Write[2]);
 }

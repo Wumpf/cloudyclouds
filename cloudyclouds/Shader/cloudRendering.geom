@@ -24,6 +24,8 @@ layout(std140) uniform View
 // constants
 const float alphaBlendLength = 0.8;
 const float maxAlpha = 0.8;
+const float rotationSpeed = 0.05;
+const float pi = 3.141592653589793;
 
 // input
 in vec3 vs_out_position[1];
@@ -65,7 +67,7 @@ void main()
 	//gs_out_depth = vs_out_depthviewspace[0] * 0.1;
 
 	// texture animation
-	float rotation = vs_out_remainingLifeTime[0] * 0.08 * sign(vs_out_rand) + vs_out_rand * PI;
+	float rotation = vs_out_remainingLifeTime[0] * rotationSpeed * sign(vs_out_rand[0]) + vs_out_rand[0] * pi;
 	float cosRot = cos(rotation) * 0.5;
 	float sinRot = sin(rotation) * 0.5;
 	vec2 texRight	= vec2(cosRot, -sinRot);

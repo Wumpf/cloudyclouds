@@ -41,8 +41,8 @@ private:
 	GLuint renderingShaderUniformIndex_LightDistancePlane_norm;
 
 	// cloud particle data
-	GLuint vbo_cloudParticleBuffer_Read;
-	GLuint vbo_cloudParticleBuffer_Write;
+	GLuint vbo_cloudParticleBuffer_Read[3];
+	GLuint vbo_cloudParticleBuffer_Write[3];
 	GLuint vao_cloudParticleBuffer_Read;
 	GLuint vao_cloudParticleBuffer_Write;
 
@@ -57,8 +57,8 @@ private:
 	};
 
 	// buffer for cpu write/read operations
-	std::unique_ptr<ParticleVertex[]> particleVertexBuffer;
-	std::unique_ptr<unsigned short[]> particleIndexBuffer;
+	std::unique_ptr<float[]>			particleDepthBuffer;
+	std::unique_ptr<unsigned short[]>	particleIndexBuffer;
 	unsigned int numParticlesRender;
 
 	// FOM
