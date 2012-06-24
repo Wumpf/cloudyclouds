@@ -15,6 +15,7 @@ layout(std140) uniform View
 {
 	mat4 ViewMatrix;
 	mat4 ViewProjection;
+	mat4 InverseViewProjection;
 	vec3 CameraPosition;
 	vec3 CameraRight;
 	vec3 CameraUp;
@@ -22,8 +23,8 @@ layout(std140) uniform View
 };
 
 // constants
-const float alphaBlendLength = 0.8;
-const float maxAlpha = 0.8;
+const float alphaFadeOutFactor = 0.1;
+const float alphaFadeInFactor = 0.15;
 const float rotationSpeed = 0.05;
 const float pi = 3.141592653589793;
 
@@ -63,7 +64,7 @@ void main()
 	vec4 screenCorMinMax = vec4(uperRight_clip.xy / uperRight_clip.w, lowerLeft_clip.xy / lowerLeft_clip.w);
 
 	// alpha
-	gs_out_Alpha = min(vs_out_remainingLifeTime[0] / alphaBlendLength, maxAlpha);
+	gs_out_Alpha = min(min(vs_out_size[0] * alphaFadeInFactor, vs_out_remainingLifeTime[0] * alphaFadeOutFactor), 1.0);
 	//gs_out_depth = vs_out_depthviewspace[0] * 0.1;
 
 	// texture animation

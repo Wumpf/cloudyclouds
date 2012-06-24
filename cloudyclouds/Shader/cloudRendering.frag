@@ -8,10 +8,12 @@ uniform sampler2D NoiseTexture;
 uniform sampler2D FOMSampler0;
 uniform sampler2D FOMSampler1;
 
+
 layout(std140) uniform View
 {
 	mat4 ViewMatrix;
 	mat4 ViewProjection;
+	mat4 InverseViewProjection;
 	vec3 CameraPosition;
 	vec3 CameraRight;
 	vec3 CameraUp;
@@ -20,7 +22,7 @@ layout(std140) uniform View
 
 // constants
 const float twoPI = 6.28318531;
-const vec3 sunLight		= vec3(1.0, 1, 0.95);
+const vec3 sunLight		= vec3(0.95, 0.93, 0.9);
 
 // input
 in vec3 gs_out_worldPos;
@@ -65,7 +67,7 @@ void main()
 	float shadowing = a0 / 2 * depth;
 	shadowing += (a1 * sin(twoPiDepth) +	    a2 * sin(twoPiDepth * 2) / 2  +	     	 a3 * sin(twoPiDepth * 3) / 3 +
 				  b1 * (1.0-cos(twoPiDepth)) + b2 * (1.0-cos(twoPiDepth * 2)) / 2  +  b3 * (1.0-cos(twoPiDepth * 3)) / 3) 
-					/ twoPI;
+					/ twoPI;	// todo optimize
 	shadowing = clamp(exp(-shadowing), 0.0, 0.8) + 0.2;
 
 

@@ -4,7 +4,6 @@
 #include <assert.h>
 
 class Matrix4;
-Matrix4 Matrix4Invert(const Matrix4& m);
 
 class Matrix4
 {
@@ -90,7 +89,7 @@ public:
 	}
 	const Matrix4& operator /= (const Matrix4& m)
 	{
-		return *this *= Matrix4Invert(m);
+		return *this *= m.invert();
 	}
 	const Matrix4& operator /= (float f)
 	{
@@ -179,6 +178,7 @@ public:
 						m13, m23, m33, m43,
 						m14, m24, m34, m44);
 	}
+	Matrix4 invert() const;
 };
 
 // Arithmetische Operatoren
@@ -202,7 +202,7 @@ inline const Matrix4 operator * (float f, const Matrix4& m)
 					m.m41 * f, m.m42 * f, m.m43 * f, m.m44 * f);
 }
 
-inline const Matrix4 operator / (const Matrix4& a, const Matrix4& b) {return a * Matrix4Invert(b);}
+inline const Matrix4 operator / (const Matrix4& a, const Matrix4& b) {return a * b.invert();}
 inline const Matrix4 operator / (const Matrix4& m, float f)
 {
 	return Matrix4(m.m11 / f, m.m12 / f, m.m13 / f, m.m14 / f,

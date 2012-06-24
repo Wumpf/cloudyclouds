@@ -3,6 +3,8 @@
 #include "Utils.h"
 #include "Clouds.h"
 #include "Camera.h"
+#include "ScreenAlignedTriangle.h"
+#include "Background.h"
 
 #include <iomanip>
 
@@ -48,7 +50,7 @@ CloudyClouds::CloudyClouds() :
 	if(glfwOpenWindow(backBufferResolutionX, backBufferResolutionY, 8, 8, 8, 0, 24, 0, GLFW_WINDOW) != GL_TRUE) // GLFW_FULLSCREEN
 		throw std::exception("ERROR: glfwOpenWindow() failed!\n");
 	glfwSetWindowCloseCallback(&onClose);
-
+	
 	// glew init
 	GLenum err = glewInit();
 	if (GLEW_OK != err)
@@ -61,8 +63,14 @@ CloudyClouds::CloudyClouds() :
 	// uniform buffers
 	InitUBOs();
 
+	// init screen aligned tri
+	screenAlignedTriangle.reset(new ScreenAlignedTriangle());
+
 	// init cloud rendering
 	clouds.reset(new Clouds(backBufferResolutionX, backBufferResolutionY, farPlaneDistance));
+
+	// init background rendering
+	background.reset(new Background(*screenAlignedTriangle.get()));
 
 	// start position
 	camera->setPosition(Vector3(0,50,0));
@@ -92,7 +100,7 @@ void CloudyClouds::InitUBOs()
 	// view ubo
 	glGenBuffers(1, &uboView);
 	glBindBuffer(GL_UNIFORM_BUFFER, uboView); 
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(float) * 4 * 12, NULL, GL_STREAM_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(float) * 4 * 16, NULL, GL_STREAM_DRAW);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 1, uboView);	// bind to index 1 - its assumed that ubo-index1-binding will never change
 
 	// timings ubo
@@ -135,13 +143,16 @@ bool CloudyClouds::update(float timeSinceLastFrame)
 bool CloudyClouds::display(float timeSinceLastFrame)
 {
 	// update global matrices
+	int offset = 0;
+	Matrix4 viewProjection = camera->getViewMatrix() * projectionMatrix;
 	glBindBuffer(GL_UNIFORM_BUFFER, uboView);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(float) * 4 * 4, camera->getViewMatrix());	// update view
-	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * 4*4 , sizeof(float) * 4 * 4, camera->getViewMatrix() * projectionMatrix);	// update viewprojection
-	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * 4*4 *2, sizeof(float) * 3, camera->getPosition());
-	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * (4*4 *2 + 4), sizeof(float) * 3, Vector3(camera->getViewMatrix().m11, camera->getViewMatrix().m21, camera->getViewMatrix().m31));
-	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * (4*4 *2 + 8), sizeof(float) * 3, Vector3(camera->getViewMatrix().m12, camera->getViewMatrix().m22, camera->getViewMatrix().m32));
-	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(float) * (4*4 *2 + 12), sizeof(float) * 3, -Vector3(camera->getViewMatrix().m13, camera->getViewMatrix().m23, camera->getViewMatrix().m33));
+	glBufferSubData(GL_UNIFORM_BUFFER, offset, sizeof(float) * 4 * 4, camera->getViewMatrix());	offset += sizeof(float) * 4 * 4;
+	glBufferSubData(GL_UNIFORM_BUFFER, offset, sizeof(float) * 4 * 4, viewProjection);			offset += sizeof(float) * 4 * 4;
+	glBufferSubData(GL_UNIFORM_BUFFER, offset, sizeof(float) * 4 * 4, viewProjection.invert());	offset += sizeof(float) * 4 * 4;
+	glBufferSubData(GL_UNIFORM_BUFFER, offset, sizeof(float) * 3, camera->getPosition());		offset += sizeof(float) * 4;
+	glBufferSubData(GL_UNIFORM_BUFFER, offset, sizeof(float) * 3, Vector3(camera->getViewMatrix().m11, camera->getViewMatrix().m21, camera->getViewMatrix().m31)); offset += sizeof(float) * 4;
+	glBufferSubData(GL_UNIFORM_BUFFER, offset, sizeof(float) * 3, Vector3(camera->getViewMatrix().m12, camera->getViewMatrix().m22, camera->getViewMatrix().m32)); offset += sizeof(float) * 4;
+	glBufferSubData(GL_UNIFORM_BUFFER, offset, sizeof(float) * 3, -Vector3(camera->getViewMatrix().m13, camera->getViewMatrix().m23, camera->getViewMatrix().m33)); offset += sizeof(float) * 4;
 
 
 	// update timings
@@ -150,10 +161,11 @@ bool CloudyClouds::display(float timeSinceLastFrame)
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(float) * 2, timings);	// update view
 
 	// clear scene
-	glClearColor(0.4f, 0.4f, 0.8f, 0.0f);
+	//glClearColor(0.4f, 0.4f, 0.8f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	//glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
+	background->display();
 	clouds->display(timeSinceLastFrame);
 
 	// next frame

@@ -122,5 +122,11 @@
     <None Include="Shader\cloudMove.vert">
       <Filter>Shader</Filter>
     </None>
+    <None Include="Shader\screenTri.vert">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\background.frag">
+      <Filter>Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

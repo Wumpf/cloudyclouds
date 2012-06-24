@@ -7,6 +7,9 @@ public:
 	ScreenAlignedTriangle();
 	~ScreenAlignedTriangle();
 
-private:
+	void display();
 
+private:
+	GLuint vbo;
+	GLuint vao;
 };

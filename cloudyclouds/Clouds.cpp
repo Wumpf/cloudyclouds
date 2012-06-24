@@ -12,14 +12,10 @@
 #include <stb_image.h>
 
 const char* Clouds::transformFeedbackVaryings[] = { "vs_out_position", "vs_out_size_time_rand", "vs_out_depthviewspace" };
-const unsigned int Clouds::maxNumCloudParticles = 2000;//16384;
+const unsigned int Clouds::maxNumCloudParticles = 6000;//16384;
 const unsigned int Clouds::fourierOpacityMapSize = 512;
 //const unsigned int Clouds::noiseTextureSize = 512;
 
-
-#ifndef BUFFER_OFFSET
-#define BUFFER_OFFSET(a) ((char*)NULL + (a))
-#endif
 
 Clouds::Clouds(unsigned int screenResolutionX, unsigned int screenResolutionY, float farPlaneDistance) :
 	screenResolutionX(screenResolutionX),
@@ -222,7 +218,6 @@ void Clouds::noiseSetup()
 	glBindTexture(GL_TEXTURE_2D, 0);*/
 
 	int TexSizeX, TexSizeY;
-
 	stbi_uc* TextureData = stbi_load("particle.png", &TexSizeX, &TexSizeY, NULL, 4);
 	if(!TextureData)
 		Log::get() << "Error while loading texture particle.png\n";
@@ -231,6 +226,7 @@ void Clouds::noiseSetup()
 	glBindTexture(GL_TEXTURE_2D, noiseTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, TexSizeX, TexSizeX, 0, GL_RGBA, GL_UNSIGNED_BYTE, TextureData);
 	glGenerateMipmap(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, 0);
 	stbi_image_free(TextureData);
 }
 
@@ -290,7 +286,7 @@ void Clouds::display(float timeSinceLastFrame)
 		// setup
 	float lightFarPlane = 300;
 	Matrix4 lightProject = Matrix4::projectionOrthogonal(300, 300, 0, lightFarPlane);
-	Matrix4 lightView = Matrix4::camera(Vector3(cosf(glfwGetTime()*0.1f)*20, 100, sinf(glfwGetTime()*0.1f)*20), Vector3(0, 0, 0), Vector3(1,0,0));
+	Matrix4 lightView = Matrix4::camera(Vector3(cosf(glfwGetTime()*0.1f)*10, 100, sinf(glfwGetTime()*0.1f)*10), Vector3(0, 0, 0), Vector3(1,0,0));
 	Matrix4 lightViewProjection = lightView * lightProject;
 	glUniform3fv(fomShaderUniformIndex_cameraX, 1, Vector3(lightView.m11, lightView.m21, lightView.m31));
 	glUniform3fv(fomShaderUniformIndex_cameraY, 1, Vector3(lightView.m12, lightView.m22, lightView.m32));
@@ -340,7 +336,6 @@ void Clouds::display(float timeSinceLastFrame)
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, 0);
-
 
 	// sort the new hopefully ready particles, while hopefully the screen itself is drawing
 	particleSorting();

@@ -10,8 +10,8 @@ uniform vec3 CameraRight;
 uniform vec3 CameraUp;
 
 // constants
-const float alphaBlendLength = 0.8;
-const float maxAlpha = 0.8;
+const float alphaFadeOutFactor = 0.1;
+const float alphaFadeInFactor = 0.15;
 const float rotationSpeed = 0.05;
 const float pi = 3.141592653589793;
 
@@ -49,7 +49,7 @@ void main()
 	   return;
 
 	// alpha
-	gs_out_Alpha = min(vs_out_remainingLifeTime[0] / alphaBlendLength, maxAlpha);
+	gs_out_Alpha = min(min(vs_out_size[0] * alphaFadeInFactor, vs_out_remainingLifeTime[0] * alphaFadeOutFactor), 1.0);
 
 	
 	// texture animation

@@ -34,4 +34,8 @@ private:
 
 	// clouds
 	std::unique_ptr<class Clouds> clouds;
+	// screen aligend tri
+	std::unique_ptr<class ScreenAlignedTriangle> screenAlignedTriangle;
+	// background
+	std::unique_ptr<class Background> background;
 };

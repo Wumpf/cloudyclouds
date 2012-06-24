@@ -5,9 +5,11 @@ layout(std140) uniform View
 {
 	mat4 ViewMatrix;
 	mat4 ViewProjection;
+	mat4 InverseViewProjection;
 	vec3 CameraPosition;
 	vec3 CameraRight;
 	vec3 CameraUp;
+	vec3 CameraDir;
 };
 layout(std140) uniform Timings
 {
@@ -16,11 +18,11 @@ layout(std140) uniform Timings
 };
 
 // constants
-const vec3 spawnareaMin = vec3(-100, -20, -100);
-const vec3 spawnareaSpan = vec3(200, 20, 200);
-const float lifeTimeMin = 2.0;
-const float lifeTimeSpan = 15.0;
-const float growthFactor = 2.5; 
+const vec3 spawnareaMin = vec3(-200, -20, -200);
+const vec3 spawnareaSpan = vec3(400, 20, 400);
+const float lifeTimeMin = 5.0;
+const float lifeTimeSpan = 20.0;
+const float growthFactor = 3.5; 
 const float windFactor = 0.3;
 const float thermicFactor = 0.1; 
 
@@ -62,6 +64,10 @@ void main()
 	{
 		uint seed = uint(totalTime * 10000.0) + uint(gl_VertexID);
 		vs_out_position = spawnareaMin + vec3(randhash(seed, spawnareaSpan.x), randhash(++seed, spawnareaSpan.y), randhash(++seed, spawnareaSpan.z));
+
+		// slightly discretize the positions to encourage cloud heaps
+		//vs_out_position = floor(vs_out_position*0.1)*10;
+
 		vs_out_remainingLifeTime = lifeTimeMin + randhash(++seed, lifeTimeSpan);
 		vs_out_size = 0;
 		vs_out_rand = randhash(++seed, 2.0) - 1.0;
@@ -70,11 +76,11 @@ void main()
 	{
 		// move
 		vs_out_position = vs_in_position;
-		vs_out_position.x -= frameTimeDelta * windFactor;
-		vs_out_position.y += frameTimeDelta * thermicFactor;
+		vs_out_position.x -= frameTimeDelta * windFactor * (vs_in_rand+1.2);
+		vs_out_position.y += frameTimeDelta * thermicFactor * vs_in_rand;
 
 		// grow
-		vs_out_size = vs_in_size + frameTimeDelta * growthFactor / min(30, vs_in_size + 0.1);	// small particles grow fast!
+		vs_out_size = vs_in_size + frameTimeDelta * growthFactor / (vs_in_size + 1);	// large particles grow slow
 
 		// rand
 		vs_out_rand = vs_in_rand;

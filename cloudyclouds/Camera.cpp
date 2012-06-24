@@ -27,9 +27,14 @@ void Camera::update(float timeSinceLastFrame)
 
 	float forward = (glfwGetKey(GLFW_KEY_UP) == GLFW_PRESS || glfwGetKey('w') == GLFW_PRESS) ? 1.0f : 0.0f;
 	float back	  = (glfwGetKey(GLFW_KEY_DOWN) == GLFW_PRESS || glfwGetKey('s') == GLFW_PRESS) ? 1.0f : 0.0f;
+	float left	  = (glfwGetKey(GLFW_KEY_LEFT) == GLFW_PRESS || glfwGetKey('a') == GLFW_PRESS) ? 1.0f : 0.0f;
+	float right	  = (glfwGetKey(GLFW_KEY_RIGHT) == GLFW_PRESS || glfwGetKey('d') == GLFW_PRESS) ? 1.0f : 0.0f;
 
 	cameraDirection = Vector3(sinf(rotX) * cosf(rotY), sinf(rotY), cosf(rotX) * cosf(rotY));
-	cameraPosition += (forward - back) * cameraDirection * moveSpeed * timeSinceLastFrame;
+	Vector3 cameraLeft = Vector3::cross(cameraDirection, Vector3(0,1,0));
+
+	cameraPosition += ((forward - back) * cameraDirection + (right -left) * cameraLeft) * moveSpeed * timeSinceLastFrame;
+
 
 	matrix = Matrix4::camera(cameraPosition, cameraPosition + cameraDirection);
 	

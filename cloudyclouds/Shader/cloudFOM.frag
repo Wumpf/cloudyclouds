@@ -44,7 +44,7 @@ void main()
 	a1 = cos(twoPi_depth);
 	b1 = sin(twoPi_depth);
 
-	a2 =/* a1*b1*2;*/		cos(twoPi_depth * 2);
+	a2 =/* a1*b1*2;*/		cos(twoPi_depth * 2);	// todo optimize
 	b2 =/* b1*b1 + a1*a1;*/ sin(twoPi_depth * 2);
 
 	a3 =/* b2*a1 + a2*b1;*/ cos(twoPi_depth * 3);

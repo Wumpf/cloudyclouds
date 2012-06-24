@@ -16,6 +16,7 @@
 #include <fstream>
 #include <iostream>
 #include <math.h>
+#include <memory>
 
 #include "Log.h"
 
