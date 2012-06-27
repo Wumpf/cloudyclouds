@@ -22,7 +22,7 @@ layout(std140) uniform View
 
 // constants
 const float twoPI = 6.28318531;
-const vec3 sunLight		= vec3(0.95, 0.93, 0.9);
+const vec3 sunLight		= vec3(1.0, 0.99, 0.96);
 
 // input
 in vec3 gs_out_worldPos;
@@ -68,9 +68,12 @@ void main()
 	shadowing += (a1 * sin(twoPiDepth) +	    a2 * sin(twoPiDepth * 2) / 2  +	     	 a3 * sin(twoPiDepth * 3) / 3 +
 				  b1 * (1.0-cos(twoPiDepth)) + b2 * (1.0-cos(twoPiDepth * 2)) / 2  +  b3 * (1.0-cos(twoPiDepth * 3)) / 3) 
 					/ twoPI;	// todo optimize
-	shadowing = clamp(exp(-shadowing), 0.0, 0.8) + 0.2;
+	shadowing = min(exp(-shadowing) + 0.45, 1.0);
 
 
 	// additional lighting features
 	fragColor = vec4(sunLight * shadowing, alpha);
+
+	// visualize depth
+	//fragColor = vec4(vec3(depth * depth * 8), alpha);
 }

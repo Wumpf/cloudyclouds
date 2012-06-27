@@ -12,8 +12,8 @@
 #include <stb_image.h>
 
 const char* Clouds::transformFeedbackVaryings[] = { "vs_out_position", "vs_out_size_time_rand", "vs_out_depthviewspace" };
-const unsigned int Clouds::maxNumCloudParticles = 6000;//16384;
-const unsigned int Clouds::fourierOpacityMapSize = 512;
+const unsigned int Clouds::maxNumCloudParticles = 5000;//16384;
+const unsigned int Clouds::fourierOpacityMapSize = 1024;
 //const unsigned int Clouds::noiseTextureSize = 512;
 
 
@@ -284,15 +284,15 @@ void Clouds::display(float timeSinceLastFrame)
 	// render FOM
 	fomShader->useProgram();
 		// setup
-	float lightFarPlane = 300;
-	Matrix4 lightProject = Matrix4::projectionOrthogonal(300, 300, 0, lightFarPlane);
-	Matrix4 lightView = Matrix4::camera(Vector3(cosf(glfwGetTime()*0.1f)*10, 100, sinf(glfwGetTime()*0.1f)*10), Vector3(0, 0, 0), Vector3(1,0,0));
+	float lightFarPlane = 100;
+	Matrix4 lightProject = Matrix4::projectionOrthogonal(600, 600, 0, lightFarPlane);
+	Matrix4 lightView = Matrix4::camera(Vector3(cosf(glfwGetTime()*0.1f)*20, 50, sinf(glfwGetTime()*0.1f)*20), Vector3(0, 0, 0), Vector3(1,0,0));
 	Matrix4 lightViewProjection = lightView * lightProject;
 	glUniform3fv(fomShaderUniformIndex_cameraX, 1, Vector3(lightView.m11, lightView.m21, lightView.m31));
 	glUniform3fv(fomShaderUniformIndex_cameraY, 1, Vector3(lightView.m12, lightView.m22, lightView.m32));
 	glUniform3fv(fomShaderUniformIndex_cameraZ, 1, -Vector3(lightView.m13, lightView.m23, lightView.m33));
 	glUniformMatrix4fv(fomShaderUniformIndex_lightViewProjection, 1, false, lightViewProjection);
-	float lightDistancePlane_Norm[] = { -lightView.m13 / lightFarPlane, -lightView.m23 / lightFarPlane, -lightView.m33 / lightFarPlane, lightView.m34 / lightFarPlane };
+	float lightDistancePlane_Norm[] = { -lightView.m13 / lightFarPlane, -lightView.m23 / lightFarPlane, -lightView.m33 / lightFarPlane, -lightView.m43 / lightFarPlane };
 	glUniform4fv(fomShaderUniformIndex_LightDistancePlane_norm, 1, lightDistancePlane_Norm);
 
 	glEnable(GL_BLEND);
