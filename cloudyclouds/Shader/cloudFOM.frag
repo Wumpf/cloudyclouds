@@ -32,10 +32,10 @@ void main()
 	// compute coefficients
 	#define a0 coef0.x
 	#define a1 coef0.y
-	#define b1 coef0.z
-	#define a2 coef0.w
-	#define b2 coef1.x
-	#define a3 coef1.y
+	#define a2 coef0.z
+	#define a3 coef0.w
+	#define b1 coef1.x
+	#define b2 coef1.y
 	#define b3 coef1.z
 
 	float twoPi_depth = twoPI * depth;
@@ -44,11 +44,11 @@ void main()
 	a1 = cos(twoPi_depth);
 	b1 = sin(twoPi_depth);
 
-	a2 =/* a1*b1*2;*/		cos(twoPi_depth * 2);	// todo optimize
-	b2 =/* b1*b1 + a1*a1;*/ sin(twoPi_depth * 2);
+	a2 = a1*a1 - b1*b1;	//cos(twoPi_depth * 2);
+	b2 = b1*a1 + a1*b1; //sin(twoPi_depth * 2);
 
-	a3 =/* b2*a1 + a2*b1;*/ cos(twoPi_depth * 3);
-	b3 =/* a2*a1 + b2*b1;*/ sin(twoPi_depth * 3);
+	a3 = a2*a1 - b2*b1; //cos(twoPi_depth * 3);
+	b3 = b2*a1 + a2*b1; //sin(twoPi_depth * 3);
 
     coef0.yzw *= a0;
 	coef1.xyz *= a0;

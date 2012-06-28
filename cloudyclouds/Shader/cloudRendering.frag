@@ -55,19 +55,45 @@ void main()
 	vec4 coef0 = textureLod(FOMSampler0, texcoordFOM, 0); 
 	vec4 coef1 = textureLod(FOMSampler1, texcoordFOM, 0);
 	#define a0 coef0.x
-	#define a1 coef0.y
-	#define b1 coef0.z
-	#define a2 coef0.w
-	#define b2 coef1.x
-	#define a3 coef1.y
-	#define b3 coef1.z
-	float depth = dot(LightDistancePlane_norm, vec4(worldPos, 1.0));
+	#define a coef0.yzw
+	#define b coef1.xyz
 
-	float twoPiDepth = twoPI * depth;
+	float depth = dot(LightDistancePlane_norm, vec4(worldPos, 1.0));
 	float shadowing = a0 / 2 * depth;
-	shadowing += (a1 * sin(twoPiDepth) +	    a2 * sin(twoPiDepth * 2) / 2  +	     	 a3 * sin(twoPiDepth * 3) / 3 +
-				  b1 * (1.0-cos(twoPiDepth)) + b2 * (1.0-cos(twoPiDepth * 2)) / 2  +  b3 * (1.0-cos(twoPiDepth * 3)) / 3) 
-					/ twoPI;	// todo optimize
+	float twoPiDepth = twoPI * depth;
+
+	vec3 avec;
+	vec3 bvec;
+	bvec.x = cos(twoPiDepth);
+	avec.x = sin(twoPiDepth);
+	bvec.y = bvec.x*bvec.x - avec.x*avec.x;
+	avec.y = avec.x*bvec.x + bvec.x*avec.x;
+	bvec.z = bvec.y*bvec.x - avec.y*avec.x;
+	avec.z = avec.y*bvec.x + bvec.y*avec.x;
+	bvec = vec3(1.0) - bvec;
+	avec.y /= 2;
+	bvec.y /= 2;
+	avec.z /= 3;
+	bvec.z /= 3;
+	shadowing += (dot(avec, a) + dot(bvec, b)) / twoPI; 	// todo optimize
+
+	// nice optimized (good visible)
+	/*float cos1 = cos(twoPiDepth);
+	float sin1 = sin(twoPiDepth);
+	float cos2 = cos1*cos1 - sin1*sin1;
+	float sin2 = sin1*cos1 + cos1*sin1;
+	float cos3 = cos2*cos1 - sin2*sin1;
+	float sin3 = sin2*cos1 + cos2*sin1;
+	
+	shadowing += (a1 * sin1       + a2 * sin2 / 2		+ a3 * sin3 / 3 +
+				  b1 * (1.0-cos1) + b2 * (1.0-cos2) / 2  + b3 * (1.0-cos3) / 3) / twoPI;
+	*/
+
+	// direct brute
+	/*shadowing += (a1 * sin1 +	    a2 * sin(twoPiDepth * 2) / 2  +	     	 a3 * sin(twoPiDepth * 3) / 3 +
+				  b1 * (1.0-cos1) + b2 * (1.0-cos(twoPiDepth * 2)) / 2  +  b3 * (1.0-cos(twoPiDepth * 3)) / 3) 
+					/ twoPI;*/
+
 	shadowing = min(exp(-shadowing) + 0.45, 1.0);
 
 
