@@ -12,8 +12,8 @@
 #include <stb_image.h>
 
 const char* Clouds::transformFeedbackVaryings[] = { "vs_out_position", "vs_out_size_time_rand", "vs_out_depthviewspace" };
-const unsigned int Clouds::maxNumCloudParticles = 5000;//16384;
-const unsigned int Clouds::fourierOpacityMapSize = 1024;
+const unsigned int Clouds::maxNumCloudParticles = 4000;//16384;
+const unsigned int Clouds::fourierOpacityMapSize = 512;
 //const unsigned int Clouds::noiseTextureSize = 512;
 
 
@@ -255,7 +255,46 @@ void Clouds::particleSorting()
 	std::cout << "Num Particles rendered: " << numParticlesRender << " \r";
 }
 
-void Clouds::display(float timeSinceLastFrame)
+void Clouds::createLightMatrices(Matrix4& lightView, Matrix4& lightProjection, float& farPlaneDistance,
+								const Matrix4& viewProj, 
+								const Vector3& viewDir, const Vector3& cameraPos,
+								const Vector3& lightDir)
+{
+	Vector3 lightUp(viewDir.x, -(lightDir.z*viewDir.z+lightDir.x*viewDir.x)/lightDir.y, viewDir.z);	// why does this work? imported code from a old project ...
+	Matrix4 matLightCamera(Matrix4::camera(0.0f, -lightDir, lightUp));
+	Matrix4 mViewProjInv_LightCamera(viewProj.invert() * matLightCamera);
+	Vector3 edges[8];
+	edges[0] = Vector3(-1.0f, -1.0f, -1.0f) * mViewProjInv_LightCamera;
+	edges[1] = Vector3(1.0f, -1.0f, -1.0f) * mViewProjInv_LightCamera;
+	edges[2] = Vector3(-1.0f, 1.0f, -1.0f) * mViewProjInv_LightCamera;
+	edges[3] = Vector3(1.0f, 1.0f, -1.0f) * mViewProjInv_LightCamera;
+	edges[4] = Vector3(-1.0f, -1.0f, 1.0f) * mViewProjInv_LightCamera;
+	edges[5] = Vector3(1.0f, -1.0f, 1.0f) * mViewProjInv_LightCamera;
+	edges[6] = Vector3(-1.0f, 1.0f, 1.0f) * mViewProjInv_LightCamera;
+	edges[7] = Vector3(1.0f, 1.0f, 1.0f) * mViewProjInv_LightCamera;
+
+	// create box
+	Vector3 min(999999);
+	Vector3 max(-999999);
+	for(int i=0; i<8; i++) 
+	{
+		min.x = std::min(edges[i].x, min.x);
+		min.y = std::min(edges[i].y, min.y);
+		min.z = std::min(edges[i].z, min.z);
+		max.x = std::max(edges[i].x, max.x);
+		max.y = std::max(edges[i].y, max.y);
+		max.z = std::max(edges[i].z, max.z);
+	}
+
+	// find good camera position
+	farPlaneDistance = max.z - min.z;
+	Vector3 lightPos = Vector3((min.x + max.x)*0.5f, (min.y + max.y)*0.5f, min.z) * matLightCamera.invert();
+	lightView = Matrix4::camera(lightPos, lightPos+lightDir, lightUp);
+	// ortho
+	lightProjection = Matrix4::projectionOrthogonal(max.x - min.x, max.y - min.y, 0, farPlaneDistance);
+}
+
+void Clouds::display(float timeSinceLastFrame, const Matrix4& viewProjection, const Vector3& cameraDirection, const Vector3& cameraPosition)
 {
 	glDisable(GL_DEPTH_TEST); 
 
@@ -283,11 +322,15 @@ void Clouds::display(float timeSinceLastFrame)
 
 	// render FOM
 	fomShader->useProgram();
-		// setup
-	float lightFarPlane = 100;
-	Matrix4 lightProject = Matrix4::projectionOrthogonal(600, 600, 0, lightFarPlane);
-	Matrix4 lightView = Matrix4::camera(Vector3(cosf(glfwGetTime()*0.1f)*20, 50, sinf(glfwGetTime()*0.1f)*20), Vector3(0, 0, 0), Vector3(1,0,0));
-	Matrix4 lightViewProjection = lightView * lightProject;
+
+	Vector3 lightDirection(1, -1, 0);
+	lightDirection.normalize();
+
+		// matrix setup
+	float lightFarPlane;
+	Matrix4 lightProjection, lightView;
+	createLightMatrices(lightView, lightProjection, lightFarPlane, viewProjection, cameraDirection, cameraPosition, lightDirection);
+	Matrix4 lightViewProjection = lightView * lightProjection;
 	glUniform3fv(fomShaderUniformIndex_cameraX, 1, Vector3(lightView.m11, lightView.m21, lightView.m31));
 	glUniform3fv(fomShaderUniformIndex_cameraY, 1, Vector3(lightView.m12, lightView.m22, lightView.m32));
 	glUniform3fv(fomShaderUniformIndex_cameraZ, 1, -Vector3(lightView.m13, lightView.m23, lightView.m33));
@@ -339,7 +382,6 @@ void Clouds::display(float timeSinceLastFrame)
 
 	// sort the new hopefully ready particles, while hopefully the screen itself is drawing
 	particleSorting();
-
 	// rotate read/write buffer
 	swap(vao_cloudParticleBuffer_Read, vao_cloudParticleBuffer_Write);
 	swap(vbo_cloudParticleBuffer_Read[0], vbo_cloudParticleBuffer_Write[0]);

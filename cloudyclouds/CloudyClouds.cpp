@@ -15,7 +15,6 @@ int onClose()
 	return GL_TRUE;
 }
 
-
 CloudyClouds::CloudyClouds() :
 	camera(new Camera())
 {
@@ -35,7 +34,7 @@ CloudyClouds::CloudyClouds() :
 	// resolution
 	backBufferResolutionX = 1024;
 	backBufferResolutionY = 768;
-	
+	/*
 #if WIN32
 	// try systemres
 	HMONITOR hMonitor = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);	//MONITOR_DEFAULTTONEAREST
@@ -45,7 +44,7 @@ CloudyClouds::CloudyClouds() :
 	backBufferResolutionX = lpmi.rcMonitor.right;
 	backBufferResolutionY = lpmi.rcMonitor.bottom;
 #endif
-	
+	*/
 	// open
 	if(glfwOpenWindow(backBufferResolutionX, backBufferResolutionY, 8, 8, 8, 0, 24, 0, GLFW_WINDOW) != GL_TRUE) // GLFW_FULLSCREEN
 		throw std::exception("ERROR: glfwOpenWindow() failed!\n");
@@ -57,7 +56,7 @@ CloudyClouds::CloudyClouds() :
 		throw std::exception((std::string("ERROR: glewInit() failed!\n") + (char*)glewGetErrorString(err)).c_str());
 
 	// projection matrix
-	const float farPlaneDistance = 400.0f;
+	const float farPlaneDistance = 200.0f;
 	projectionMatrix = Matrix4::projectionPerspective(degToRad(45.0f), static_cast<float>(backBufferResolutionX) / backBufferResolutionY, 0.1f, farPlaneDistance);
 
 	// uniform buffers
@@ -166,7 +165,7 @@ bool CloudyClouds::display(float timeSinceLastFrame)
 	//glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 	background->display();
-	clouds->display(timeSinceLastFrame);
+	clouds->display(timeSinceLastFrame, viewProjection, camera->getDirection(), camera->getPosition());
 
 	// next frame
 	glfwSwapBuffers();

@@ -2,6 +2,9 @@
 
 #include <memory>
 
+class Matrix4;
+class Vector3;
+
 // references
 // http://dl.acm.org/citation.cfm?id=1730831
 
@@ -11,7 +14,7 @@ public:
 	Clouds(unsigned int screenResolutionX, unsigned int screenResolutionY, float farPlaneDistance);
 	~Clouds();
 
-	void display(float timeSinceLastFrame);
+	void display(float timeSinceLastFrame, const Matrix4& viewProjection, const Vector3& cameraDirection, const Vector3& cameraPosition);
 
 private:
 	void shaderSetup();
@@ -21,6 +24,11 @@ private:
 	void noiseSetup();
 
 	void particleSorting();
+
+	void createLightMatrices(Matrix4& viewMatrix, Matrix4& projectionMatrix, float& farPlaneDistance,
+								const Matrix4& viewProj, 
+								const Vector3& viewDir, const Vector3& cameraPos,
+								const Vector3& lightDir);
 
 
 	std::unique_ptr<class ShaderObject> moveShader;

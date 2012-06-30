@@ -13,7 +13,8 @@ public:
 	void setPosition(const Vector3& pos) 	{ cameraPosition = pos; }
 
 	const Matrix4& getViewMatrix() const	{ return matrix; }
-	const Vector3 getPosition() const		{ return cameraPosition; }
+	const Vector3& getPosition() const		{ return cameraPosition; }
+	const Vector3& getDirection() const		{ return cameraDirection; }
 
 private:
 	Matrix4 matrix;

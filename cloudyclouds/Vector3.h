@@ -69,14 +69,21 @@ public:
 	operator float* ()		 		{ return static_cast<float*>(a); }
 	operator const float* () const	{ return static_cast<const float*>(a); }
 
-
 	// --- functions ---
 
 	// functions with one vector
-	inline float			length() const;
-	inline float			lengthSq() const;
-	inline Vector3			normalizeCpy() const;
-	inline const Vector3&	normalize();
+	inline float		length() const;
+	inline float		lengthSq() const;
+	inline Vector3		normalizeCpy() const;
+	inline Vector3&		normalize()
+	{
+		float l = sqrt(x*x+y*y+z*z);
+		x /= l;
+		y /= l;
+		z /= l;
+		return *this;
+	}
+
 
 	// functions with 2 vectors
 	static Vector3	cross(const Vector3& v1, const Vector3& v2);
@@ -94,3 +101,4 @@ public:
 // more arithmetic operators
 inline Vector3 operator * (float f, const Vector3& v) { return Vector3(v.x*f, v.y*f, v.z*f); }
 inline Vector3 operator / (float f, const Vector3& v) { return Vector3(v.x/f, v.y/f, v.z/f); }
+extern Vector3 operator * (const Vector3& v, const class Matrix4 &m );

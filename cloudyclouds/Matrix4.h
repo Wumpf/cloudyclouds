@@ -3,8 +3,6 @@
 #include "Vector3.h"
 #include <assert.h>
 
-class Matrix4;
-
 class Matrix4
 {
 public:
@@ -44,13 +42,15 @@ public:
 	operator const float* () const		{ return static_cast<const float*>(n); }
 
 	// access operators
-	inline float* operator [] (size_t iRow)
+	inline float* operator [] (int iRow)
     {
+		assert( iRow < 0 );
         assert( iRow < 4 );
         return m[iRow];
     }
-    inline const float *operator [] (size_t iRow) const
+    inline const float *operator [] (int iRow) const
     {
+		assert( iRow < 0 );
         assert( iRow < 4 );
         return m[iRow];
     }
@@ -127,7 +127,6 @@ public:
 		return r;
 	}
 
-
 	// --- comparision operators ---
     inline bool operator == ( const Matrix4& m2 ) const
     {
@@ -168,6 +167,7 @@ public:
 
 	static Matrix4 projectionPerspective(float FOV, float aspect, float nearPlane, float farPlane);
 	static Matrix4 projectionOrthogonal(float width, float height, float nearPlane, float farPlane);
+	static Matrix4 projectionOrthogonal(float left, float right, float bottom, float top, float nearPlane, float farPlane);
 	static Matrix4 camera(const Vector3& vPos, const Vector3& vLockAt, const Vector3& vUp = Vector3(0.0f, 1.0f, 0.0f));
 	
 	// utils

@@ -26,6 +26,16 @@ Matrix4 Matrix4::projectionOrthogonal(float width, float height, float nearPlane
 
 }
 
+Matrix4 Matrix4::projectionOrthogonal(float left, float right, float bottom, float top, float nearPlane, float farPlane)
+{
+	// http://wiki.delphigl.com/index.php/glOrtho transposed
+	return Matrix4(2/(right-left),  0,    0,           0,
+					0,    2/(top-bottom),  0,         0,
+					0,    0,    -2/(farPlane-nearPlane),  0,
+					-(right+left)/(right-left),    -(top+bottom)/(top-bottom),   -(farPlane+nearPlane)/(farPlane-nearPlane),	1);
+
+}
+
 Matrix4 Matrix4::camera(const Vector3& vPos, const Vector3& vLockAt, const Vector3& vUp)
 {
 	Vector3 zaxis = (vLockAt - vPos).normalizeCpy();

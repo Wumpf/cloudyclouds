@@ -97,8 +97,11 @@ void main()
 	shadowing = min(exp(-shadowing) + 0.45, 1.0);
 
 
-	// additional lighting features
+	// "lighting"
 	fragColor = vec4(sunLight * shadowing, alpha);
+
+	// specular
+
 
 	// visualize depth
 	//fragColor = vec4(vec3(depth * depth * 8), alpha);
