@@ -1,13 +1,15 @@
 #version 330
 
 // uniforms
-uniform mat4 LightViewProjection;
-uniform vec4 LightDistancePlane_norm;
-uniform float LightFarPlane;
 uniform sampler2D NoiseTexture;
 uniform sampler2D FOMSampler0;
 uniform sampler2D FOMSampler1;
 
+uniform mat4 LightViewProjection;
+uniform vec4 LightDistancePlane_norm;
+uniform float LightFarPlane;
+
+uniform vec3 LightDirection_viewspace;
 
 layout(std140) uniform View
 {
@@ -22,11 +24,14 @@ layout(std140) uniform View
 
 // constants
 const float twoPI = 6.28318531;
-const vec3 sunLight		= vec3(1.0, 0.99, 0.96);
+const vec3 ColorDark = vec3(0.34, 0.43, 0.51);
+const vec3 ColorLight = vec3(0.83, 0.83, 0.81);
+const vec3 ColorSpecular = vec3(0.95, 0.91, 0.84)*0.4;
 
 // input
 in vec3 gs_out_worldPos;
 in vec2 gs_out_texcoord;
+in vec2 gs_out_relativePosition;
 in float gs_out_Alpha;
 in float gs_out_depth;
 
@@ -52,11 +57,12 @@ void main()
 	// FOM
 	vec4 posFOM = (LightViewProjection * vec4(worldPos, 1.0));
 	vec2 texcoordFOM = (posFOM.xy / posFOM.w + vec2(1.0, 1.0)) * vec2(0.5, 0.5);
-	vec4 coef0 = textureLod(FOMSampler0, texcoordFOM, 0); 
-	vec4 coef1 = textureLod(FOMSampler1, texcoordFOM, 0);
+	vec4 coef0 = textureLod(FOMSampler0, texcoordFOM, 0.0); 
+	vec4 coef1 = textureLod(FOMSampler1, texcoordFOM, 0.0);
+
 	#define a0 coef0.x
-	#define a coef0.yzw
-	#define b coef1.xyz
+	#define _a coef0.yzw
+	#define _b coef1.xyz
 
 	float depth = dot(LightDistancePlane_norm, vec4(worldPos, 1.0));
 	float shadowing = a0 / 2 * depth;
@@ -75,7 +81,7 @@ void main()
 	bvec.y /= 2;
 	avec.z /= 3;
 	bvec.z /= 3;
-	shadowing += (dot(avec, a) + dot(bvec, b)) / twoPI; 	// todo optimize
+	shadowing += (dot(avec, _a) + dot(bvec, _b)) / twoPI; 	// todo optimize
 
 	// nice optimized (good visible)
 	/*float cos1 = cos(twoPiDepth);
@@ -94,14 +100,23 @@ void main()
 				  b1 * (1.0-cos1) + b2 * (1.0-cos(twoPiDepth * 2)) / 2  +  b3 * (1.0-cos(twoPiDepth * 3)) / 3) 
 					/ twoPI;*/
 
-	shadowing = min(exp(-shadowing) + 0.45, 1.0);
+	shadowing = exp(-shadowing);
 
 
-	// "lighting"
-	fragColor = vec4(sunLight * shadowing, alpha);
+	// specular - calc in viewspace
+	vec3 normal_viewspace = vec3(-gs_out_relativePosition.y, -gs_out_relativePosition.x,
+								sqrt(1-dot(gs_out_relativePosition.xy, gs_out_relativePosition.xy)));	// normal on a sphere (dissorting by alpha seems not very effective)
+	float NDotL = dot(LightDirection_viewspace, normal_viewspace);
+	vec3 viewDir_viewspace = -normalize(ViewMatrix * vec4(worldPos, 1)).xyz;
+	vec3 refl = normalize((2 * NDotL) * normal_viewspace - LightDirection_viewspace);
+  	float specularAmount = max(dot(refl, viewDir_viewspace), 0);
+	specularAmount *= specularAmount * specularAmount;	// spec exp is 2
+	specularAmount *= alpha;	// less spherical feeling
 
-	// specular
-
+	// final color
+	fragColor.a = alpha;
+	float lightAmount = shadowing + max(NDotL*0.5 * alpha, 0.0);	// here also retouch spherical terms with alpha
+	fragColor.rgb = mix(ColorDark, ColorLight, lightAmount) + specularAmount*ColorSpecular;	// lerping between colors is important - clouds don't becom simply dark, they become dark blue!
 
 	// visualize depth
 	//fragColor = vec4(vec3(depth * depth * 8), alpha);

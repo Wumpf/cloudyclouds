@@ -57,7 +57,7 @@ void main()
 		fragColor.rgb = mix(UpperHorizonColour, UpperSkyColour, (heightValue-UpperHorizonHeight) / (1.0-UpperHorizonHeight));
 	
 	// Sun
-	vec3 SunLightDir = normalize(vec3(0.5, 1.0, 0));
+	vec3 SunLightDir = normalize(vec3(-1.0, 1.0, 0));
 	float angle = max(0, dot(rayDirection, SunLightDir));
 	fragColor.rgb += (pow(angle, SunAttenuation) + pow(angle, 10000)*10) * AdditonalSunColor;
 

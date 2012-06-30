@@ -165,7 +165,7 @@ bool CloudyClouds::display(float timeSinceLastFrame)
 	//glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 	background->display();
-	clouds->display(timeSinceLastFrame, viewProjection, camera->getDirection(), camera->getPosition());
+	clouds->display(timeSinceLastFrame, camera->getViewMatrix(), viewProjection, camera->getDirection(), camera->getPosition());
 
 	// next frame
 	glfwSwapBuffers();

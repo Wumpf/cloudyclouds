@@ -66,14 +66,27 @@ float Vector3::angle(const Vector3& v1, const Vector3& v2)
 }
 
 Vector3 operator * (const Vector3& v, const Matrix4 &m )
-	{
-		Vector3 r;
+{
+	Vector3 r;
 
-		float fInvW = 1.0f / ( m.m[0][3] * v.x + m.m[1][3] * v.y + m.m[2][3] * v.z + m.m[3][3] );
+	float fInvW = 1.0f / ( m.m[0][3] * v.x + m.m[1][3] * v.y + m.m[2][3] * v.z + m.m[3][3] );
 
-		r.x = ( m.m[0][0] * v.x + m.m[1][0] * v.y + m.m[2][0] * v.z + m.m[3][0] ) * fInvW;
-		r.y = ( m.m[0][1] * v.x + m.m[1][1] * v.y + m.m[2][1] * v.z + m.m[3][1] ) * fInvW;
-		r.z = ( m.m[0][2] * v.x + m.m[1][2] * v.y + m.m[2][2] * v.z + m.m[3][2] ) * fInvW;
+	r.x = ( m.m[0][0] * v.x + m.m[1][0] * v.y + m.m[2][0] * v.z + m.m[3][0] ) * fInvW;
+	r.y = ( m.m[0][1] * v.x + m.m[1][1] * v.y + m.m[2][1] * v.z + m.m[3][1] ) * fInvW;
+	r.z = ( m.m[0][2] * v.x + m.m[1][2] * v.y + m.m[2][2] * v.z + m.m[3][2] ) * fInvW;
 
-		return r;
-	}
+	return r;
+}
+
+Vector3 Vector3::transformNormal(const Matrix4 &m) const
+{
+	Vector3 r;
+
+	r.x = ( m.m[0][0] * x + m.m[1][0] * y + m.m[2][0] * z );
+	r.y = ( m.m[0][1] * x + m.m[1][1] * y + m.m[2][1] * z );
+	r.z = ( m.m[0][2] * x + m.m[1][2] * y + m.m[2][2] * z );
+
+	r.normalize();
+
+	return r;
+}

@@ -80,6 +80,7 @@ void Clouds::shaderSetup()
 	glUniformBlockBinding(renderingShader->getProgram(), blockIndex, 1);	// View binding=1
 	renderingShaderUniformIndex_lightViewProjection = glGetUniformLocation(renderingShader->getProgram(), "LightViewProjection");
 	renderingShaderUniformIndex_LightDistancePlane_norm = glGetUniformLocation(renderingShader->getProgram(), "LightDistancePlane_norm");
+	renderingShaderUniformIndex_LightDirection = glGetUniformLocation(renderingShader->getProgram(), "LightDirection_viewspace");
 
 
 	glUniform1i(glGetUniformLocation(renderingShader->getProgram(), "NoiseTexture"), 0);
@@ -294,7 +295,7 @@ void Clouds::createLightMatrices(Matrix4& lightView, Matrix4& lightProjection, f
 	lightProjection = Matrix4::projectionOrthogonal(max.x - min.x, max.y - min.y, 0, farPlaneDistance);
 }
 
-void Clouds::display(float timeSinceLastFrame, const Matrix4& viewProjection, const Vector3& cameraDirection, const Vector3& cameraPosition)
+void Clouds::display(float timeSinceLastFrame, const Matrix4& viewMatrix, const Matrix4& viewProjection, const Vector3& cameraDirection, const Vector3& cameraPosition)
 {
 	glDisable(GL_DEPTH_TEST); 
 
@@ -355,6 +356,7 @@ void Clouds::display(float timeSinceLastFrame, const Matrix4& viewProjection, co
 	renderingShader->useProgram();
 	glUniformMatrix4fv(renderingShaderUniformIndex_lightViewProjection, 1, false, lightViewProjection);
 	glUniform4fv(renderingShaderUniformIndex_LightDistancePlane_norm, 1, lightDistancePlane_Norm);
+	glUniform3fv(renderingShaderUniformIndex_LightDirection, 1, (-lightDirection).transformNormal(viewMatrix));
 
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, fourierOpacityMap_Textures[0]);

@@ -90,6 +90,8 @@ public:
 	static float	dot(const Vector3& v1, const Vector3& v2);
 	static float	angle(const Vector3& v1, const Vector3& v2);
 
+	Vector3 transformNormal(const class Matrix4 &m) const;
+
 
 	// --- special values ---
 	static const Vector3 zero;

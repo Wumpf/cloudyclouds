@@ -14,7 +14,7 @@ public:
 	Clouds(unsigned int screenResolutionX, unsigned int screenResolutionY, float farPlaneDistance);
 	~Clouds();
 
-	void display(float timeSinceLastFrame, const Matrix4& viewProjection, const Vector3& cameraDirection, const Vector3& cameraPosition);
+	void display(float timeSinceLastFrame, const Matrix4& viewMatrix, const Matrix4& viewProjection, const Vector3& cameraDirection, const Vector3& cameraPosition);
 
 private:
 	void shaderSetup();
@@ -44,9 +44,11 @@ private:
 	GLuint fomShaderUniformIndex_cameraZ;
 	GLuint fomShaderUniformIndex_lightViewProjection;
 	GLuint fomShaderUniformIndex_LightDistancePlane_norm;
+
 	// rendering shader unifrom indices
 	GLuint renderingShaderUniformIndex_lightViewProjection;
 	GLuint renderingShaderUniformIndex_LightDistancePlane_norm;
+	GLuint renderingShaderUniformIndex_LightDirection;
 
 	// cloud particle data
 	GLuint vbo_cloudParticleBuffer_Read[3];

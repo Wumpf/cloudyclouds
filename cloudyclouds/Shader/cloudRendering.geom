@@ -33,19 +33,15 @@ in vec3 vs_out_position[1];
 in float vs_out_size[1];
 in float vs_out_remainingLifeTime[1];
 in float vs_out_rand[1];
-//in float vs_out_depthviewspace[1];	// [-1, 1] depth
 
 // output
 out vec3 gs_out_worldPos;
 out vec2 gs_out_texcoord; 
 out float gs_out_Alpha;
-//out float gs_out_depth;
+out vec2 gs_out_relativePosition;
 
 void main()
 {
-	/*if(gl_PrimitiveIDIn != 0)
-	{ */
-
 	// gen view aligned quad
 	// http://www.flipcode.com/archives/Billboarding-Excerpt_From_iReal-Time_Renderingi_2E.shtml
 
@@ -65,7 +61,6 @@ void main()
 
 	// alpha
 	gs_out_Alpha = min(min(vs_out_size[0] * alphaFadeInFactor, vs_out_remainingLifeTime[0] * alphaFadeOutFactor), 1.0);
-	//gs_out_depth = vs_out_depthviewspace[0] * 0.1;
 
 	// texture animation
 	float rotation = vs_out_remainingLifeTime[0] * rotationSpeed * sign(vs_out_rand[0]) + vs_out_rand[0] * pi;
@@ -80,39 +75,22 @@ void main()
 	gl_Position.xy = screenCorMinMax.xy;
 	gs_out_worldPos = uperRight_world;
 	gs_out_texcoord = -texDiag + vec2(0.5,0.5);
+	gs_out_relativePosition = vec2(-1.0,-1.0);
 	EmitVertex();
 	gl_Position.xy = screenCorMinMax.xw;
 	gs_out_worldPos = vs_out_position[0] + right - up;
 	gs_out_texcoord = texRight - texUp + vec2(0.5,0.5);
+	gs_out_relativePosition = vec2(1.0,-1.0);
 	EmitVertex();
 	gl_Position.xy = screenCorMinMax.zy;
 	gs_out_worldPos = vs_out_position[0] - right + up;
 	gs_out_texcoord = -texRight + texUp + vec2(0.5,0.5);
+	gs_out_relativePosition = vec2(-1.0,1.0);
 	EmitVertex();
 	gl_Position.xy = screenCorMinMax.zw;
 	gs_out_worldPos = lowerLeft_world;
 	gs_out_texcoord = texDiag + vec2(0.5,0.5);
+	gs_out_relativePosition = vec2(1.0,1.0);
 	EmitVertex();
 	EndPrimitive();
-	/*}
-
-	else
-	{
-	gs_out_Alpha = 10000;
-	gs_out_texcoord = vec2(0.5, 0.5);
-
-	// generate quad
-	gs_out_worldPos = vec3(0,30,30);
-	gl_Position = ViewProjection * vec4(gs_out_worldPos, 1);
-	EmitVertex();
-
-	gs_out_worldPos = vec3(30,30,0);
-	gl_Position = ViewProjection * vec4(gs_out_worldPos, 1);
-	EmitVertex();
-
-	gs_out_worldPos = vec3(0,30,0);
-	gl_Position = ViewProjection * vec4(gs_out_worldPos, 1);
-	EmitVertex();
-	EndPrimitive();
-	} */
 }
