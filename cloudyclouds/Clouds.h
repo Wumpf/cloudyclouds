@@ -14,7 +14,8 @@ public:
 	Clouds(unsigned int screenResolutionX, unsigned int screenResolutionY, float farPlaneDistance);
 	~Clouds();
 
-	void display(float timeSinceLastFrame, const Matrix4& viewMatrix, const Matrix4& viewProjection, const Vector3& cameraDirection, const Vector3& cameraPosition);
+	void display(float timeSinceLastFrame, const Matrix4& viewMatrix, const Matrix4& viewProjection, const Vector3& cameraDirection, const Vector3& cameraPosition,
+							class ScreenAlignedTriangle& screenTri);
 
 private:
 	void shaderSetup();
@@ -33,6 +34,7 @@ private:
 
 	std::unique_ptr<class ShaderObject> moveShader;
 	std::unique_ptr<class ShaderObject> fomShader;
+	std::unique_ptr<class ShaderObject> fomFilterShader;
 	std::unique_ptr<class ShaderObject> renderingShader;
 
 	unsigned int screenResolutionX, screenResolutionY;
@@ -44,6 +46,9 @@ private:
 	GLuint fomShaderUniformIndex_cameraZ;
 	GLuint fomShaderUniformIndex_lightViewProjection;
 	GLuint fomShaderUniformIndex_LightDistancePlane_norm;
+
+	// fom filter uniform indices
+	GLuint fomFilterShaderUniformIndex_Offset;
 
 	// rendering shader unifrom indices
 	GLuint renderingShaderUniformIndex_lightViewProjection;
@@ -71,10 +76,9 @@ private:
 	std::unique_ptr<unsigned short[]>	particleIndexBuffer;
 	unsigned int numParticlesRender;
 
-	// FOM
-	GLuint fourierOpacityMap_Textures[2];
-	GLuint fourierOpacityMap_DepthBuffer;
-	GLuint fourierOpacityMap_FBO;
+	// FOM - two for filtering
+	GLuint fourierOpacityMap_Textures[2][2];
+	GLuint fourierOpacityMap_FBO[2];
 
 	// noise
 	GLuint noiseTexture;

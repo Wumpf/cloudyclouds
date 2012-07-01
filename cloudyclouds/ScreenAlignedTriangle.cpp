@@ -45,9 +45,9 @@ ScreenAlignedTriangle::~ScreenAlignedTriangle(void)
 
 void ScreenAlignedTriangle::display()
 {
-	glDisable(GL_DEPTH_TEST);
+	//glDisable(GL_DEPTH_TEST);
 	glBindVertexArray(vao);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 	glBindVertexArray(0);
-	glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_DEPTH_TEST);
 }

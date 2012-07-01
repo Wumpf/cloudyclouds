@@ -6,7 +6,7 @@
 	#include <Windows.h>
 #endif
 
-#define GLEW_STATIC
+#define GLEW_DLL
 #include <GL\glew.h>
 #define GLFW_NO_GLU
 #include <GL\glfw.h>

@@ -24,9 +24,9 @@ layout(std140) uniform View
 
 // constants
 const float twoPI = 6.28318531;
-const vec3 ColorDark = vec3(0.34, 0.43, 0.51);
-const vec3 ColorLight = vec3(0.83, 0.83, 0.81);
-const vec3 ColorSpecular = vec3(0.95, 0.91, 0.84)*0.4;
+const vec3 ColorDark = vec3(0.34, 0.43, 0.51)*1.4;
+const vec3 ColorLight = vec3(0.83, 0.83, 0.81)*1.4;
+const vec3 ColorSpecular = vec3(0.95, 0.91, 0.84)*0.35;
 
 // input
 in vec3 gs_out_worldPos;
@@ -59,6 +59,22 @@ void main()
 	vec2 texcoordFOM = (posFOM.xy / posFOM.w + vec2(1.0, 1.0)) * vec2(0.5, 0.5);
 	vec4 coef0 = textureLod(FOMSampler0, texcoordFOM, 0.0); 
 	vec4 coef1 = textureLod(FOMSampler1, texcoordFOM, 0.0);
+/*
+	coef0 += textureLod(FOMSampler0, texcoordFOM + vec2(1.0/512, 1.0/512), 0.0);
+	coef1 += textureLod(FOMSampler1, texcoordFOM + vec2(1.0/512, 1.0/512), 0.0);
+
+	coef0 += textureLod(FOMSampler0, texcoordFOM - vec2(1.0/512, 1.0/512), 0.0); 
+	coef1 += textureLod(FOMSampler1, texcoordFOM - vec2(1.0/512, 1.0/512), 0.0);
+
+	coef0 += textureLod(FOMSampler0, texcoordFOM - vec2(1.0/512, -1.0/512), 0.0); 
+	coef1 += textureLod(FOMSampler1, texcoordFOM - vec2(1.0/512, -1.0/512), 0.0);
+
+	coef0 += textureLod(FOMSampler0, texcoordFOM + vec2(1.0/512, -1.0/512), 0.0); 
+	coef1 += textureLod(FOMSampler1, texcoordFOM + vec2(1.0/512, -1.0/512), 0.0);
+
+	coef0 /= 5.0;
+	coef1 /= 5.0;
+	*/
 
 	#define a0 coef0.x
 	#define _a coef0.yzw
@@ -115,7 +131,7 @@ void main()
 
 	// final color
 	fragColor.a = alpha;
-	float lightAmount = shadowing + max(NDotL*0.5 * alpha, 0.0);	// here also retouch spherical terms with alpha
+	float lightAmount = shadowing + max(NDotL * 0.4 * alpha, 0.0);	// here also retouch spherical terms with alpha
 	fragColor.rgb = mix(ColorDark, ColorLight, lightAmount) + specularAmount*ColorSpecular;	// lerping between colors is important - clouds don't becom simply dark, they become dark blue!
 
 	// visualize depth

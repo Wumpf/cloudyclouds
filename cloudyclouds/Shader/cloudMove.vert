@@ -19,12 +19,12 @@ layout(std140) uniform Timings
 
 // constants
 const vec3 spawnareaMin = vec3(-200, -20, -200);
-const vec3 spawnareaSpan = vec3(400, 20, 400);
-const float lifeTimeMin = 6.0;
-const float lifeTimeSpan = 25.0;
-const float growthFactor = 5.0; 
-const float windFactor = 0.3;
-const float thermicFactor = 0.1; 
+const vec3 spawnareaSpan = vec3(400, 10, 400);
+const float lifeTimeMin = 5.0;
+const float lifeTimeSpan = 22.0;
+const float growthFactor = 4.8; 
+const float windFactor = 0.4;
+const float thermicFactor = 0.35; 
 
 // input
 layout(location = 0) in vec3 vs_in_position;

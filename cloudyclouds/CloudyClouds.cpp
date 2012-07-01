@@ -56,7 +56,7 @@ CloudyClouds::CloudyClouds() :
 		throw std::exception((std::string("ERROR: glewInit() failed!\n") + (char*)glewGetErrorString(err)).c_str());
 
 	// projection matrix
-	const float farPlaneDistance = 200.0f;
+	const float farPlaneDistance = 300.0f;
 	projectionMatrix = Matrix4::projectionPerspective(degToRad(45.0f), static_cast<float>(backBufferResolutionX) / backBufferResolutionY, 0.1f, farPlaneDistance);
 
 	// uniform buffers
@@ -160,12 +160,10 @@ bool CloudyClouds::display(float timeSinceLastFrame)
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(float) * 2, timings);	// update view
 
 	// clear scene
-	//glClearColor(0.4f, 0.4f, 0.8f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 	background->display();
-	clouds->display(timeSinceLastFrame, camera->getViewMatrix(), viewProjection, camera->getDirection(), camera->getPosition());
+	clouds->display(timeSinceLastFrame, camera->getViewMatrix(), viewProjection, camera->getDirection(), camera->getPosition(), *screenAlignedTriangle.get());
 
 	// next frame
 	glfwSwapBuffers();

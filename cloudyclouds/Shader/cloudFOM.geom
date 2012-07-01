@@ -28,8 +28,8 @@ out float gs_out_Alpha;
 
 void main()
 {
-	/*if(gl_PrimitiveIDIn != 0)
-	{ */
+//	if(gl_PrimitiveIDIn != 0)
+//	{ 
 
 	// culling
 	vec3 right = CameraRight * vs_out_size[0];
@@ -87,18 +87,17 @@ void main()
 	gs_out_texcoord = vec2(0.5, 0.5);
 
 	// generate quad
-	gs_out_worldPos = vec3(0,30,30);
+	gs_out_worldPos = vec3(0,20,30);
 	gl_Position = LightViewProjection * vec4(gs_out_worldPos, 1);
 	EmitVertex();
 
-	gs_out_worldPos= vec3(30,30,0);
+	gs_out_worldPos= vec3(30,20,0);
 	gl_Position = LightViewProjection * vec4(gs_out_worldPos, 1);
 	EmitVertex();
 
-	gs_out_worldPos = vec3(0,30,0);
+	gs_out_worldPos = vec3(0,20,0);
 	gl_Position = LightViewProjection * vec4(gs_out_worldPos, 1);
 	EmitVertex();
 	EndPrimitive();
-	
 	} */
 }
