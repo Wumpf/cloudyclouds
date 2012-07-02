@@ -25,6 +25,7 @@ in float vs_out_rand[1];
 out vec2 gs_out_texcoord;
 out vec3 gs_out_worldPos;
 out float gs_out_Alpha;
+out float gs_out_size;
 
 void main()
 {
@@ -50,7 +51,8 @@ void main()
 
 	// alpha
 	gs_out_Alpha = min(min(vs_out_size[0] * alphaFadeInFactor, vs_out_remainingLifeTime[0] * alphaFadeOutFactor), 1.0);
-
+	// size
+	gs_out_size = vs_out_size[0];
 	
 	// texture animation
 	float rotation = vs_out_remainingLifeTime[0] * rotationSpeed * sign(vs_out_rand[0]) + vs_out_rand[0] * pi;

@@ -17,6 +17,9 @@ const unsigned int Clouds::fourierOpacityMapSize = 512;
 //const unsigned int Clouds::noiseTextureSize = 512;
 
 
+const GLuint Clouds::drawBuffers_Two[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+const GLuint Clouds::drawBuffers_One[1] = { GL_COLOR_ATTACHMENT0 };
+
 Clouds::Clouds(unsigned int screenResolutionX, unsigned int screenResolutionY, float farPlaneDistance) :
 	screenResolutionX(screenResolutionX),
 	screenResolutionY(screenResolutionY),
@@ -42,6 +45,7 @@ Clouds::~Clouds()
 	glDeleteTextures(2, fourierOpacityMap_Textures[0]);
 	glDeleteTextures(2, fourierOpacityMap_Textures[1]);
 	glDeleteSamplers(1, &linearSampler_noMipMaps);
+	glDeleteSamplers(1, &linearSampler_MipMaps);
 	glDeleteVertexArrays(1, &vao_cloudParticleBuffer_Read);
 	glDeleteVertexArrays(1, &vao_cloudParticleBuffer_Write);
 	glDeleteBuffers(1, &vbo_cloudParticleBuffer_Read[0]);
@@ -118,8 +122,6 @@ void Clouds::fboSetup()
 		glBindFramebuffer(GL_FRAMEBUFFER, fourierOpacityMap_FBO[i]);
 			glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, fourierOpacityMap_Textures[i][0], 0);
 			glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, fourierOpacityMap_Textures[i][1], 0);
-			GLenum DrawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-			glDrawBuffers(2, DrawBuffers);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -135,6 +137,13 @@ void Clouds::samplerSetup()
 	glSamplerParameteri(linearSampler_noMipMaps, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glSamplerParameteri(linearSampler_noMipMaps, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glSamplerParameteri(linearSampler_noMipMaps, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	glGenSamplers(1, &linearSampler_MipMaps);
+	glSamplerParameteri(linearSampler_MipMaps, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glSamplerParameteri(linearSampler_MipMaps, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glSamplerParameteri(linearSampler_MipMaps, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glSamplerParameteri(linearSampler_MipMaps, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glSamplerParameteri(linearSampler_MipMaps, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 }
 
 void Clouds::bufferSetup()
@@ -306,8 +315,8 @@ void Clouds::display(float timeSinceLastFrame, const Matrix4& viewMatrix, const 
 	// (so new data is used with a delay!)
 	
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, noiseTexture);
-	glBindSampler(0, linearSampler_noMipMaps);
+	glBindTexture(GL_TEXTURE_2D, noiseTexture);	// noise is always on 0; the FOM textures are on 1 and 2
+	glBindSampler(0, linearSampler_MipMaps);
 
 	// move clouds
 	glBindVertexArray(vao_cloudParticleBuffer_Read);
@@ -320,6 +329,7 @@ void Clouds::display(float timeSinceLastFrame, const Matrix4& viewMatrix, const 
 	glDrawArrays(GL_POINTS, 0, maxNumCloudParticles);
 	glEndTransformFeedback();
 	glDisable(GL_RASTERIZER_DISCARD);
+
 
 	// render FOM
 	fomShader->useProgram();
@@ -344,20 +354,24 @@ void Clouds::display(float timeSinceLastFrame, const Matrix4& viewMatrix, const 
 	glViewport(0,0, fourierOpacityMapSize, fourierOpacityMapSize);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fourierOpacityMap_FBO[0]);
+	glDrawBuffers(2, drawBuffers_Two);
+
 	glClear(GL_COLOR_BUFFER_BIT);
 	glDrawArrays(GL_POINTS, 0, maxNumCloudParticles);
 	
 	glDisable(GL_BLEND);
 
-	// new samplers
+	// samplerstates for fom-textures
 	glBindSampler(1, linearSampler_noMipMaps);
 	glBindSampler(2, linearSampler_noMipMaps);
+
 
 	// filter FOM
 		// shader
 	fomFilterShader->useProgram();
 		// horizontal
 	glBindFramebuffer(GL_FRAMEBUFFER, fourierOpacityMap_FBO[1]);
+	glDrawBuffers(2, drawBuffers_Two);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, fourierOpacityMap_Textures[0][0]);
 	glActiveTexture(GL_TEXTURE2);
@@ -366,17 +380,21 @@ void Clouds::display(float timeSinceLastFrame, const Matrix4& viewMatrix, const 
 	screenTri.display();
 		// vertical
 	glBindFramebuffer(GL_FRAMEBUFFER, fourierOpacityMap_FBO[0]);
+	glDrawBuffers(2, drawBuffers_Two);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, fourierOpacityMap_Textures[1][0]);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, fourierOpacityMap_Textures[1][1]);
 	glUniform4f(fomFilterShaderUniformIndex_Offset, 0.0f, 1.5f / fourierOpacityMapSize, 0.0f, -1.5f / fourierOpacityMapSize);
 	screenTri.display();
-
+	
 	// reset to backbuffer rendering
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glDrawBuffers(1, drawBuffers_One);
 	glViewport(0,0, screenResolutionX, screenResolutionY); 
 	
+	
+
 	// render clouds
 	glBindVertexArray(vao_cloudParticleBuffer_Read);
 	renderingShader->useProgram();

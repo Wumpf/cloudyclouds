@@ -9,6 +9,7 @@ uniform vec3 CameraDir;
 in vec2 gs_out_texcoord;
 in vec3 gs_out_worldPos;
 in float gs_out_Alpha;
+in float gs_out_size;
 
 // output
 layout(location = 0) out vec4 coef0;
@@ -26,7 +27,7 @@ void main()
 	float inverseAlpha = 1.0 - alpha;
 
 	// sphere position
-	vec3 worldPos = gs_out_worldPos - tex * CameraDir;
+	vec3 worldPos = gs_out_worldPos - tex * CameraDir * gs_out_size;
 	float depth = dot(LightDistancePlane_norm, vec4(worldPos, 1.0));
 
 	// compute coefficients

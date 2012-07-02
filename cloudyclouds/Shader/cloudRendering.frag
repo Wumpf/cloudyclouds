@@ -31,9 +31,9 @@ const vec3 ColorSpecular = vec3(0.95, 0.91, 0.84)*0.35;
 // input
 in vec3 gs_out_worldPos;
 in vec2 gs_out_texcoord;
-in vec2 gs_out_relativePosition;
 in float gs_out_Alpha;
-in float gs_out_depth;
+in float gs_out_size;
+in vec2 gs_out_relativePosition;
 
 // output
 out vec4 fragColor;
@@ -47,7 +47,7 @@ void main()
 		discard;
 
 	// sphere position
-	vec3 worldPos = gs_out_worldPos - tex * CameraDir;
+	vec3 worldPos = gs_out_worldPos - tex * CameraDir * gs_out_size;
 
 	// fade at camera
 	vec3 toViewer = gs_out_worldPos - CameraPosition;

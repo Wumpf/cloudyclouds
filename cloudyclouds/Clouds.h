@@ -85,6 +85,12 @@ private:
 
 	// sampler
 	GLuint linearSampler_noMipMaps;
+	GLuint linearSampler_MipMaps;
+
+	// mrt settings
+	static const GLuint drawBuffers_One[1];
+	static const GLuint drawBuffers_Two[2];
+
 
 	static const char* transformFeedbackVaryings[];
 	static const unsigned int maxNumCloudParticles;
