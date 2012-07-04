@@ -14,6 +14,7 @@ const float alphaFadeOutFactor = 0.1;
 const float alphaFadeInFactor = 0.15;
 const float rotationSpeed = 0.05;
 const float pi = 3.141592653589793;
+const float depthDissortFactor = 0.5;
 
 // input
 in vec3 vs_out_position[1];
@@ -25,7 +26,7 @@ in float vs_out_rand[1];
 out vec2 gs_out_texcoord;
 out vec3 gs_out_worldPos;
 out float gs_out_Alpha;
-out float gs_out_size;
+out float gs_out_depthDissort;
 
 void main()
 {
@@ -52,7 +53,7 @@ void main()
 	// alpha
 	gs_out_Alpha = min(min(vs_out_size[0] * alphaFadeInFactor, vs_out_remainingLifeTime[0] * alphaFadeOutFactor), 1.0);
 	// size
-	gs_out_size = vs_out_size[0];
+	gs_out_depthDissort = vs_out_size[0] * depthDissortFactor;
 	
 	// texture animation
 	float rotation = vs_out_remainingLifeTime[0] * rotationSpeed * sign(vs_out_rand[0]) + vs_out_rand[0] * pi;

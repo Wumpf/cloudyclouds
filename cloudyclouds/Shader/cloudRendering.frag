@@ -25,14 +25,14 @@ layout(std140) uniform View
 // constants
 const float twoPI = 6.28318531;
 const vec3 ColorDark = vec3(0.34, 0.43, 0.51)*1.4;
-const vec3 ColorLight = vec3(0.83, 0.83, 0.81)*1.4;
-const vec3 ColorSpecular = vec3(0.95, 0.91, 0.84)*0.35;
+const vec3 ColorLight = vec3(0.83, 0.83, 0.81)*1.3;
+const vec3 ColorSpecular = vec3(0.95, 0.91, 0.84)*0.5;
 
 // input
 in vec3 gs_out_worldPos;
 in vec2 gs_out_texcoord;
 in float gs_out_Alpha;
-in float gs_out_size;
+in float gs_out_depthDissort;
 in vec2 gs_out_relativePosition;
 
 // output
@@ -47,7 +47,7 @@ void main()
 		discard;
 
 	// sphere position
-	vec3 worldPos = gs_out_worldPos - tex * CameraDir * gs_out_size;
+	vec3 worldPos = gs_out_worldPos - tex * CameraDir * gs_out_depthDissort;
 
 	// fade at camera
 	vec3 toViewer = gs_out_worldPos - CameraPosition;

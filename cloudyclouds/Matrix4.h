@@ -44,13 +44,13 @@ public:
 	// access operators
 	inline float* operator [] (int iRow)
     {
-		assert( iRow < 0 );
+		assert( iRow >= 0 );
         assert( iRow < 4 );
         return m[iRow];
     }
     inline const float *operator [] (int iRow) const
     {
-		assert( iRow < 0 );
+		assert( iRow >= 0 );
         assert( iRow < 4 );
         return m[iRow];
     }

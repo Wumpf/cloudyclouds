@@ -66,7 +66,7 @@ CloudyClouds::CloudyClouds() :
 	screenAlignedTriangle.reset(new ScreenAlignedTriangle());
 
 	// init cloud rendering
-	clouds.reset(new Clouds(backBufferResolutionX, backBufferResolutionY, farPlaneDistance));
+	clouds.reset(new Clouds(backBufferResolutionX, backBufferResolutionY, farPlaneDistance, *screenAlignedTriangle.get()));
 
 	// init background rendering
 	background.reset(new Background(*screenAlignedTriangle.get()));
@@ -147,7 +147,8 @@ bool CloudyClouds::display(float timeSinceLastFrame)
 	glBindBuffer(GL_UNIFORM_BUFFER, uboView);
 	glBufferSubData(GL_UNIFORM_BUFFER, offset, sizeof(float) * 4 * 4, camera->getViewMatrix());	offset += sizeof(float) * 4 * 4;
 	glBufferSubData(GL_UNIFORM_BUFFER, offset, sizeof(float) * 4 * 4, viewProjection);			offset += sizeof(float) * 4 * 4;
-	glBufferSubData(GL_UNIFORM_BUFFER, offset, sizeof(float) * 4 * 4, viewProjection.invert());	offset += sizeof(float) * 4 * 4;
+	Matrix4 inverseViewProjection(viewProjection.invert());
+	glBufferSubData(GL_UNIFORM_BUFFER, offset, sizeof(float) * 4 * 4, inverseViewProjection);	offset += sizeof(float) * 4 * 4;
 	glBufferSubData(GL_UNIFORM_BUFFER, offset, sizeof(float) * 3, camera->getPosition());		offset += sizeof(float) * 4;
 	glBufferSubData(GL_UNIFORM_BUFFER, offset, sizeof(float) * 3, Vector3(camera->getViewMatrix().m11, camera->getViewMatrix().m21, camera->getViewMatrix().m31)); offset += sizeof(float) * 4;
 	glBufferSubData(GL_UNIFORM_BUFFER, offset, sizeof(float) * 3, Vector3(camera->getViewMatrix().m12, camera->getViewMatrix().m22, camera->getViewMatrix().m32)); offset += sizeof(float) * 4;
@@ -161,9 +162,13 @@ bool CloudyClouds::display(float timeSinceLastFrame)
 
 	// clear scene
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+	Vector3 lightDirection(1, -1, 0);
+	lightDirection.normalize();
+
 
 	background->display();
-	clouds->display(timeSinceLastFrame, camera->getViewMatrix(), viewProjection, camera->getDirection(), camera->getPosition(), *screenAlignedTriangle.get());
+	clouds->display(timeSinceLastFrame, inverseViewProjection, camera->getViewMatrix(), camera->getDirection(), camera->getPosition(), lightDirection);
 
 	// next frame
 	glfwSwapBuffers();

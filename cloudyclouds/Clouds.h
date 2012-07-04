@@ -1,8 +1,8 @@
 #pragma once
 
 #include <memory>
+#include "Matrix4.h"
 
-class Matrix4;
 class Vector3;
 
 // references
@@ -11,34 +11,51 @@ class Vector3;
 class Clouds
 {
 public:
-	Clouds(unsigned int screenResolutionX, unsigned int screenResolutionY, float farPlaneDistance);
+	Clouds(unsigned int screenResolutionX, unsigned int screenResolutionY, float farPlaneDistance, class ScreenAlignedTriangle& screenTri);
 	~Clouds();
 
-	void display(float timeSinceLastFrame, const Matrix4& viewMatrix, const Matrix4& viewProjection, const Vector3& cameraDirection, const Vector3& cameraPosition,
-							class ScreenAlignedTriangle& screenTri);
+	void display(float timeSinceLastFrame, const Matrix4& inverseViewProjection, const Matrix4& view,
+				const Vector3& cameraDirection, const Vector3& cameraPosition, const Vector3& lightDir);
 
 private:
-	void shaderSetup();
-	void fboSetup();
-	void samplerSetup();
-	void bufferSetup();
-	void noiseSetup();
+	void shaderInit();
+	void fboInit();
+	void samplerInit();
+	void bufferInit();
+	void noiseInit();
 
+
+	void moveClouds();
+	void renderFOM(const Matrix4& inverseViewProjection, const Vector3& viewDir, const Vector3& cameraPos, const Vector3& lightDirection);
+	void renderClouds(const Vector3& lightDir, const Matrix4& viewMatrix);
 	void particleSorting();
 
-	void createLightMatrices(Matrix4& viewMatrix, Matrix4& projectionMatrix, float& farPlaneDistance,
+
+	void createLightMatrices(Matrix4& lightView, Matrix4& lightProjection, float& farPlaneDistance,
 								const Matrix4& viewProj, 
 								const Vector3& viewDir, const Vector3& cameraPos,
 								const Vector3& lightDir);
-
-
+	/*
+	void createLightMatrices(const Matrix4& inverseViewProjection, 
+								const Vector3& cameraDirection, const Vector3& cameraPos,
+								const Vector3& lightDir);
+								*/
+	// shader
 	std::unique_ptr<class ShaderObject> moveShader;
 	std::unique_ptr<class ShaderObject> fomShader;
 	std::unique_ptr<class ShaderObject> fomFilterShader;
 	std::unique_ptr<class ShaderObject> renderingShader;
 
+	// screen infos
 	unsigned int screenResolutionX, screenResolutionY;
 	float farPlaneDistance;
+
+	// light infos (updated every frame)
+	float lightFarPlane;
+	Matrix4 lightProjection;
+	Matrix4 lightView;
+	Matrix4 lightViewProjection;
+	float lightDistancePlane_Norm[4];
 
 	// fom shader uniform indices
 	GLuint fomShaderUniformIndex_cameraX;
@@ -46,10 +63,8 @@ private:
 	GLuint fomShaderUniformIndex_cameraZ;
 	GLuint fomShaderUniformIndex_lightViewProjection;
 	GLuint fomShaderUniformIndex_LightDistancePlane_norm;
-
 	// fom filter uniform indices
 	GLuint fomFilterShaderUniformIndex_Offset;
-
 	// rendering shader unifrom indices
 	GLuint renderingShaderUniformIndex_lightViewProjection;
 	GLuint renderingShaderUniformIndex_LightDistancePlane_norm;
@@ -60,16 +75,7 @@ private:
 	GLuint vbo_cloudParticleBuffer_Write[3];
 	GLuint vao_cloudParticleBuffer_Read;
 	GLuint vao_cloudParticleBuffer_Write;
-
 	GLuint ibo_cloudParticleRendering;
-
-	// struct-representation of a particle vertex
-	struct ParticleVertex
-	{
-		float position[3];
-		float size_time_rand[3];
-		float depth;
-	};
 
 	// buffer for cpu write/read operations
 	std::unique_ptr<float[]>			particleDepthBuffer;
@@ -86,6 +92,9 @@ private:
 	// sampler
 	GLuint linearSampler_noMipMaps;
 	GLuint linearSampler_MipMaps;
+
+	// screen tri
+	ScreenAlignedTriangle& screenTri;
 
 	// mrt settings
 	static const GLuint drawBuffers_One[1];

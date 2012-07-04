@@ -20,7 +20,7 @@ const unsigned int Clouds::fourierOpacityMapSize = 512;
 const GLuint Clouds::drawBuffers_Two[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 const GLuint Clouds::drawBuffers_One[1] = { GL_COLOR_ATTACHMENT0 };
 
-Clouds::Clouds(unsigned int screenResolutionX, unsigned int screenResolutionY, float farPlaneDistance) :
+Clouds::Clouds(unsigned int screenResolutionX, unsigned int screenResolutionY, float farPlaneDistance, ScreenAlignedTriangle& screenTri) :
 	screenResolutionX(screenResolutionX),
 	screenResolutionY(screenResolutionY),
 	farPlaneDistance(farPlaneDistance),
@@ -29,13 +29,14 @@ Clouds::Clouds(unsigned int screenResolutionX, unsigned int screenResolutionY, f
 	fomFilterShader(new ShaderObject("Shader\\screenTri.vert", "Shader\\cloudFOMBlur.frag")),
 	renderingShader(new ShaderObject("Shader\\cloudPassThrough.vert", "Shader\\cloudRendering.frag", "Shader\\cloudRendering.geom")),
 	particleDepthBuffer(new float[maxNumCloudParticles]),
-	particleIndexBuffer(new unsigned short[maxNumCloudParticles])
+	particleIndexBuffer(new unsigned short[maxNumCloudParticles]),
+	screenTri(screenTri)
 {
-	shaderSetup();
-	fboSetup();
-	bufferSetup();
-	samplerSetup();
-	noiseSetup();
+	shaderInit();
+	fboInit();
+	bufferInit();
+	samplerInit();
+	noiseInit();
 }
 
 Clouds::~Clouds()
@@ -58,7 +59,7 @@ Clouds::~Clouds()
 	glDeleteBuffers(1, &noiseTexture);
 }
 
-void Clouds::shaderSetup()
+void Clouds::shaderInit()
 {
 	// set ubo bindings, get uniform locations
 		// move
@@ -103,7 +104,7 @@ void Clouds::shaderSetup()
 	checkGLError("settings cloudRendering");
 }
 
-void Clouds::fboSetup()
+void Clouds::fboInit()
 {
 	// Data Stuff
 		// textures
@@ -122,13 +123,14 @@ void Clouds::fboSetup()
 		glBindFramebuffer(GL_FRAMEBUFFER, fourierOpacityMap_FBO[i]);
 			glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, fourierOpacityMap_Textures[i][0], 0);
 			glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, fourierOpacityMap_Textures[i][1], 0);
+			glDrawBuffers(2, drawBuffers_Two);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 }
 
-void Clouds::samplerSetup()
+void Clouds::samplerInit()
 {
 	// sampler
 	glGenSamplers(1, &linearSampler_noMipMaps);
@@ -146,7 +148,7 @@ void Clouds::samplerSetup()
 	glSamplerParameteri(linearSampler_MipMaps, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 }
 
-void Clouds::bufferSetup()
+void Clouds::bufferInit()
 {
 	// data objects
 		// init with random lifetimes as seed
@@ -216,7 +218,7 @@ void Clouds::bufferSetup()
 	checkGLError("cloudVAO_Write");
 }
 
-void Clouds::noiseSetup()
+void Clouds::noiseInit()
 {
 	/*glGenTextures(1, &noiseTexture);
 	glBindTexture(GL_TEXTURE_2D, noiseTexture);
@@ -263,6 +265,22 @@ void Clouds::particleSorting()
 	std::cout << "Num Particles rendered: " << numParticlesRender << " \r";
 }
 
+void Clouds::moveClouds()
+{
+	glBindVertexArray(vao_cloudParticleBuffer_Read);
+	glEnable(GL_RASTERIZER_DISCARD); 
+	
+	moveShader->useProgram();
+	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, vbo_cloudParticleBuffer_Write[0]);	// specify targets
+	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 1, vbo_cloudParticleBuffer_Write[1]);	
+	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 2, vbo_cloudParticleBuffer_Write[2]);	
+	glBeginTransformFeedback(GL_POINTS);
+	glDrawArrays(GL_POINTS, 0, maxNumCloudParticles);
+	glEndTransformFeedback();
+
+	glDisable(GL_RASTERIZER_DISCARD);
+}
+
 void Clouds::createLightMatrices(Matrix4& lightView, Matrix4& lightProjection, float& farPlaneDistance,
 								const Matrix4& viewProj, 
 								const Vector3& viewDir, const Vector3& cameraPos,
@@ -284,7 +302,7 @@ void Clouds::createLightMatrices(Matrix4& lightView, Matrix4& lightProjection, f
 	// create box
 	Vector3 min(999999);
 	Vector3 max(-999999);
-	for(int i=0; i<8; i++) 
+	for(int i=0; i<8; i++)
 	{
 		min.x = std::min(edges[i].x, min.x);
 		min.y = std::min(edges[i].y, min.y);
@@ -302,51 +320,27 @@ void Clouds::createLightMatrices(Matrix4& lightView, Matrix4& lightProjection, f
 	lightProjection = Matrix4::projectionOrthogonal(max.x - min.x, max.y - min.y, 0, farPlaneDistance);
 }
 
-void Clouds::display(float timeSinceLastFrame, const Matrix4& viewMatrix, const Matrix4& viewProjection, const Vector3& cameraDirection, const Vector3& cameraPosition,
-							ScreenAlignedTriangle& screenTri)
-{
-	glDisable(GL_DEPTH_TEST); 
+void Clouds::renderFOM(const Matrix4& inverseViewProjection, const Vector3& cameraDirection, const Vector3& cameraPosition, const Vector3& lightDir)
+{	
+	fomShader->useProgram();
 
-	// through all the following passes the "read" buffer will be read
-
-	// in the "write" buffer comes new data, that will be sorted
-	// i'am hoping to maximes parallism this way: first the data will be upated, but everyone uses the old
-	// then (still rendering) the upated particles will be sorted - frame ended, buffer switch
-	// (so new data is used with a delay!)
-	
+	// noise tex
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, noiseTexture);	// noise is always on 0; the FOM textures are on 1 and 2
 	glBindSampler(0, linearSampler_MipMaps);
 
-	// move clouds
-	glBindVertexArray(vao_cloudParticleBuffer_Read);
-	glEnable(GL_RASTERIZER_DISCARD); 
-	moveShader->useProgram();
-	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, vbo_cloudParticleBuffer_Write[0]);	// specify targets
-	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 1, vbo_cloudParticleBuffer_Write[1]);	
-	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 2, vbo_cloudParticleBuffer_Write[2]);	
-	glBeginTransformFeedback(GL_POINTS);
-	glDrawArrays(GL_POINTS, 0, maxNumCloudParticles);
-	glEndTransformFeedback();
-	glDisable(GL_RASTERIZER_DISCARD);
+	// matrix setup
+	createLightMatrices(lightView, lightProjection, lightFarPlane, inverseViewProjection.invert(), cameraDirection, cameraPosition, lightDir);
+	lightViewProjection = lightView * lightProjection;
 
-
-	// render FOM
-	fomShader->useProgram();
-
-	Vector3 lightDirection(1, -1, 0);
-	lightDirection.normalize();
-
-		// matrix setup
-	float lightFarPlane;
-	Matrix4 lightProjection, lightView;
-	createLightMatrices(lightView, lightProjection, lightFarPlane, viewProjection, cameraDirection, cameraPosition, lightDirection);
-	Matrix4 lightViewProjection = lightView * lightProjection;
 	glUniform3fv(fomShaderUniformIndex_cameraX, 1, Vector3(lightView.m11, lightView.m21, lightView.m31));
 	glUniform3fv(fomShaderUniformIndex_cameraY, 1, Vector3(lightView.m12, lightView.m22, lightView.m32));
 	glUniform3fv(fomShaderUniformIndex_cameraZ, 1, -Vector3(lightView.m13, lightView.m23, lightView.m33));
 	glUniformMatrix4fv(fomShaderUniformIndex_lightViewProjection, 1, false, lightViewProjection);
-	float lightDistancePlane_Norm[] = { -lightView.m13 / lightFarPlane, -lightView.m23 / lightFarPlane, -lightView.m33 / lightFarPlane, -lightView.m43 / lightFarPlane };
+	lightDistancePlane_Norm[0] = -lightView.m13 / lightFarPlane;
+	lightDistancePlane_Norm[1] = -lightView.m23 / lightFarPlane;
+	lightDistancePlane_Norm[2] = -lightView.m33 / lightFarPlane;
+	lightDistancePlane_Norm[3] = -lightView.m43 / lightFarPlane;
 	glUniform4fv(fomShaderUniformIndex_LightDistancePlane_norm, 1, lightDistancePlane_Norm);
 
 	glEnable(GL_BLEND);
@@ -391,32 +385,52 @@ void Clouds::display(float timeSinceLastFrame, const Matrix4& viewMatrix, const 
 	// reset to backbuffer rendering
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDrawBuffers(1, drawBuffers_One);
-	glViewport(0,0, screenResolutionX, screenResolutionY); 
-	
-	
+	glViewport(0,0, screenResolutionX, screenResolutionY); 	
+}
 
-	// render clouds
-	glBindVertexArray(vao_cloudParticleBuffer_Read);
+void Clouds::renderClouds(const Vector3& lightDir, const Matrix4& viewMatrix)
+{
+// render clouds
+	//renderClouds(lightDir, view);
 	renderingShader->useProgram();
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cloudParticleRendering);
+	glBindVertexArray(vao_cloudParticleBuffer_Read);
+
+	// light settings
 	glUniformMatrix4fv(renderingShaderUniformIndex_lightViewProjection, 1, false, lightViewProjection);
 	glUniform4fv(renderingShaderUniformIndex_LightDistancePlane_norm, 1, lightDistancePlane_Norm);
-	glUniform3fv(renderingShaderUniformIndex_LightDirection, 1, (-lightDirection).transformNormal(viewMatrix));
+	glUniform3fv(renderingShaderUniformIndex_LightDirection, 1, (-lightDir).transformNormal(viewMatrix));	// need direction TO light
 
+	glBindSampler(1, linearSampler_noMipMaps);
+	glBindSampler(2, linearSampler_noMipMaps);
+
+
+	// textures
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, noiseTexture);	// noise is always on 0; the FOM textures are on 1 and 2
+	glBindSampler(0, linearSampler_MipMaps);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, fourierOpacityMap_Textures[0][0]);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, fourierOpacityMap_Textures[0][1]);
 
+	// blending
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		// buffers
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cloudParticleRendering);
-	
+	glBindVertexArray(vao_cloudParticleBuffer_Read);
+
 	glDrawElements(GL_POINTS, numParticlesRender, GL_UNSIGNED_SHORT, 0);
 
+	// reset stuff
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glDisable(GL_BLEND);
 
+	// reset textures
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glActiveTexture(GL_TEXTURE1);
@@ -424,9 +438,29 @@ void Clouds::display(float timeSinceLastFrame, const Matrix4& viewMatrix, const 
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
 
+void Clouds::display(float timeSinceLastFrame, const Matrix4& inverseViewProjection, const Matrix4& view,
+						const Vector3& cameraDirection, const Vector3& cameraPosition, const Vector3& lightDir)
+{
+	glDisable(GL_DEPTH_TEST); 
+
+	// through all the following passes the "read" buffer will be read
+
+	// in the "write" buffer comes new data, that will be sorted
+	// i'am hoping to maximes parallism this way: first the data will be upated, but everyone uses the old
+	// then (still rendering) the upated particles will be sorted - frame ended, buffer switch
+	// (so new data is used with a delay!)
+	
+	// move clouds
+	moveClouds();
+	// render fom
+	renderFOM(inverseViewProjection, cameraDirection, cameraPosition, lightDir);
+	// render clouds
+	renderClouds(lightDir, view);
 	// sort the new hopefully ready particles, while hopefully the screen itself is drawing
 	particleSorting();
+
 	// rotate read/write buffer
 	swap(vao_cloudParticleBuffer_Read, vao_cloudParticleBuffer_Write);
 	swap(vbo_cloudParticleBuffer_Read[0], vbo_cloudParticleBuffer_Write[0]);
