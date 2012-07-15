@@ -23,8 +23,8 @@ layout(std140) uniform View
 };
 
 // constants
-const float alphaFadeOutFactor = 0.1;
-const float alphaFadeInFactor = 0.15;
+const float alphaFadeOutFactor = 0.3;
+const float alphaFadeInFactor = 0.35;
 const float rotationSpeed = 0.05;
 const float pi = 3.141592653589793;
 const float depthDissortFactor = 0.5;

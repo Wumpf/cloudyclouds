@@ -32,9 +32,9 @@ CloudyClouds::CloudyClouds() :
 	// setup window
 	// \todo xml config
 	// resolution
-	backBufferResolutionX = 1024;
-	backBufferResolutionY = 768;
-	/*
+	//backBufferResolutionX = 1024;
+	//backBufferResolutionY = 768;
+	
 #if WIN32
 	// try systemres
 	HMONITOR hMonitor = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);	//MONITOR_DEFAULTTONEAREST
@@ -44,7 +44,7 @@ CloudyClouds::CloudyClouds() :
 	backBufferResolutionX = lpmi.rcMonitor.right;
 	backBufferResolutionY = lpmi.rcMonitor.bottom;
 #endif
-	*/
+	
 	// open
 	if(glfwOpenWindow(backBufferResolutionX, backBufferResolutionY, 8, 8, 8, 0, 24, 0, GLFW_WINDOW) != GL_TRUE) // GLFW_FULLSCREEN
 		throw std::exception("ERROR: glfwOpenWindow() failed!\n");

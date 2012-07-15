@@ -61,6 +61,8 @@ void main()
 	float angle = max(0, dot(rayDirection, SunLightDir));
 	fragColor.rgb += (pow(angle, SunAttenuation) + pow(angle, 10000)*10) * AdditonalSunColor;
 
+//	fragColor.rgb = abs(rayDirection);
+
 /*	// sky
 	fragColor.rgb = mix(HorizonColor, SkyColor, min(1.0, abs(rayDirection.y+0.2)*HorizonSharpness));
 	fragColor.a = 1.0f;
