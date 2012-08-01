@@ -12,8 +12,8 @@
 #include <stb_image.h>
 
 const char* Clouds::transformFeedbackVaryings[] = { "vs_out_position", "vs_out_size_time_rand", "vs_out_depthviewspace" };
-const unsigned int Clouds::maxNumCloudParticles = 16384;
-const unsigned int Clouds::fourierOpacityMapSize = 512;
+const unsigned int Clouds::maxNumCloudParticles = 10000;// 16384;
+const unsigned int Clouds::fourierOpacityMapSize = 1024;
 //const unsigned int Clouds::noiseTextureSize = 512;
 
 

@@ -12,6 +12,7 @@ uniform vec3 CameraUp;
 // constants
 const float alphaFadeOutFactor = 0.3;
 const float alphaFadeInFactor = 0.35;
+const float transmittanceBoost = 0.3f;
 const float rotationSpeed = 0.05;
 const float pi = 3.141592653589793;
 const float depthDissortFactor = 0.5;
@@ -30,28 +31,25 @@ out float gs_out_depthDissort;
 
 void main()
 {
-//	if(gl_PrimitiveIDIn != 0)
-//	{ 
-
-	// culling
+	// compute quad
 	vec3 right = CameraRight * vs_out_size[0];
 	vec3 up = CameraUp * vs_out_size[0];
 	vec3 diag = right + up;
 
 	vec3 uperRight_world = vs_out_position[0] + diag;
 	vec4 uperRight_clip = LightViewProjection * vec4(uperRight_world, 1.0);
-
 	vec3 lowerLeft_world = vs_out_position[0] - diag;
 	vec4 lowerLeft_clip = LightViewProjection * vec4(lowerLeft_world, 1.0);
 
 	vec4 screenCorMinMax = vec4(uperRight_clip.xy / uperRight_clip.w, lowerLeft_clip.xy / lowerLeft_clip.w);
+	
+	// culling
 	vec4 absScreenCorMinMax = abs(screenCorMinMax);
-	if(all(greaterThan(absScreenCorMinMax.xz, vec2(1,1))) ||
-	   all(greaterThan(absScreenCorMinMax.yw, vec2(1,1))))
+	if(all(greaterThan(absScreenCorMinMax.xz, vec2(1,1))) || all(greaterThan(absScreenCorMinMax.yw, vec2(1,1))))
 	   return;
 
 	// alpha
-	gs_out_Alpha = min(min(vs_out_size[0] * alphaFadeInFactor, vs_out_remainingLifeTime[0] * alphaFadeOutFactor), 1.0);
+	gs_out_Alpha = min(min(vs_out_size[0] * alphaFadeInFactor, vs_out_remainingLifeTime[0] * alphaFadeOutFactor), 1.0) * transmittanceBoost;
 	// size
 	gs_out_depthDissort = vs_out_size[0] * depthDissortFactor;
 	
@@ -82,25 +80,4 @@ void main()
 	gs_out_texcoord = texDiag + vec2(0.5,0.5);
 	EmitVertex();
 	EndPrimitive();
-	/*}
-
-	else
-	{
-	gs_out_Alpha = 1;
-	gs_out_texcoord = vec2(0.5, 0.5);
-
-	// generate quad
-	gs_out_worldPos = vec3(0,20,30);
-	gl_Position = LightViewProjection * vec4(gs_out_worldPos, 1);
-	EmitVertex();
-
-	gs_out_worldPos= vec3(30,20,0);
-	gl_Position = LightViewProjection * vec4(gs_out_worldPos, 1);
-	EmitVertex();
-
-	gs_out_worldPos = vec3(0,20,0);
-	gl_Position = LightViewProjection * vec4(gs_out_worldPos, 1);
-	EmitVertex();
-	EndPrimitive();
-	} */
 }

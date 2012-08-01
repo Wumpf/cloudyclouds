@@ -65,9 +65,6 @@ void main()
 		uint seed = uint(totalTime * 10000.0) + uint(gl_VertexID);
 		vs_out_position = spawnareaMin + vec3(randhash(seed, spawnareaSpan.x), randhash(++seed, spawnareaSpan.y), randhash(++seed, spawnareaSpan.z));
 
-		// slightly discretize the positions to encourage cloud heaps
-		//vs_out_position = floor(vs_out_position*0.1)*10;
-
 		vs_out_remainingLifeTime = lifeTimeMin + randhash(++seed, lifeTimeSpan);
 		vs_out_size = 0;
 		vs_out_rand = randhash(++seed, 2.0) - 1.0;
@@ -88,18 +85,18 @@ void main()
 
 	// depth output, culling
 	vec3 diag = (CameraRight + CameraUp) * vs_out_size;
-	vec4 uperRight =  ViewProjection * vec4(vs_out_position + diag, 1.0);
-	vec2 lowerLeft = (ViewProjection * vec4(vs_out_position - diag, 1.0)).xy;	// \todo transposing matrices and swaping matrices could save some ops
+	vec3 uperRight = (ViewProjection * vec4(vs_out_position + diag, 1.0)).xyw;
+	vec2 lowerLeft = (ViewProjection * vec4(vs_out_position - diag, 1.0)).xy;
 	vec4 screenCorMinMax = vec4(uperRight.xy, lowerLeft.xy);
 	vec4 absScreenCorMinMax = abs(screenCorMinMax);
-	if(all(greaterThan(absScreenCorMinMax.xz, uperRight.ww)) ||
-	   all(greaterThan(absScreenCorMinMax.yw, uperRight.ww)))
+	if(all(greaterThan(absScreenCorMinMax.xz, uperRight.zz)) ||
+	   all(greaterThan(absScreenCorMinMax.yw, uperRight.zz)))
 	{
 		vs_out_depthviewspace = 999999;
 	}
 	else
 	{
-		vs_out_depthviewspace = (ViewProjection * vec4(vs_out_position, 1)).z;	// \todo transposing matrices and swaping matrices could save some ops
+		vs_out_depthviewspace = (ViewProjection * vec4(vs_out_position, 1)).z;
 		if(vs_out_depthviewspace < 0.0)
 			vs_out_depthviewspace = 999999;
 	}

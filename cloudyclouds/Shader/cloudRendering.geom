@@ -45,25 +45,19 @@ out vec2 gs_out_relativePosition;
 
 void main()
 {
-//	if(gl_PrimitiveIDIn != 0)
-//	{ 
-
 	// gen view aligned quad
 	// http://www.flipcode.com/archives/Billboarding-Excerpt_From_iReal-Time_Renderingi_2E.shtml
-
-	vec4 clipCordinate = ViewProjection * vec4(vs_out_position[0], 1.0);	// cordinate of particle position in clipspace
-	vec2 sizeClipSpace = vec2(vs_out_size[0]*100.0, vs_out_size[0]*100.0) * InverseScreenResolution;
-
 	vec3 right = CameraRight * vs_out_size[0];
 	vec3 up = CameraUp * vs_out_size[0];
 	vec3 diag = right + up;
 
 	vec3 uperRight_world = vs_out_position[0] + diag;
 	vec4 uperRight_clip = ViewProjection * vec4(uperRight_world, 1.0);
-
 	vec3 lowerLeft_world = vs_out_position[0] - diag;
 	vec4 lowerLeft_clip = ViewProjection * vec4(lowerLeft_world, 1.0);
+
 	vec4 screenCorMinMax = vec4(uperRight_clip.xy / uperRight_clip.w, lowerLeft_clip.xy / lowerLeft_clip.w);
+
 
 	// alpha
 	gs_out_Alpha = min(min(vs_out_size[0] * alphaFadeInFactor, vs_out_remainingLifeTime[0] * alphaFadeOutFactor), 1.0);
@@ -101,24 +95,4 @@ void main()
 	gs_out_relativePosition = vec2(1.0,1.0);
 	EmitVertex();
 	EndPrimitive();
-/*	}
-	else
-	{
-	gs_out_Alpha = 10000;
-	gs_out_texcoord = vec2(0.5, 0.5);
-
-	// generate quad
-	gs_out_worldPos = vec3(0,20,30);
-	gl_Position = ViewProjection * vec4(gs_out_worldPos, 1);
-	EmitVertex();
-
-	gs_out_worldPos = vec3(30,20,0);
-	gl_Position = ViewProjection * vec4(gs_out_worldPos, 1);
-	EmitVertex();
-
-	gs_out_worldPos = vec3(0,20,0);
-	gl_Position = ViewProjection * vec4(gs_out_worldPos, 1);
-	EmitVertex();
-	EndPrimitive();
-	} */
 }
