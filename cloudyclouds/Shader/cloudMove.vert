@@ -18,13 +18,14 @@ layout(std140) uniform Timings
 };
 
 // constants
-const vec3 spawnareaMin = vec3(-200, -20, -200);
-const vec3 spawnareaSpan = vec3(400, 10, 400);
+const vec3 spawnareaMin = vec3(-300, -20, -300);
+const vec3 spawnareaSpan = vec3(500, 20, 500);
 const float lifeTimeMin = 5.0;
 const float lifeTimeSpan = 22.0;
-const float growthFactor = 3;// 4.8; 
-const float windFactor = 0.4;
+const float growthFactor = 2.8;
+const float windFactor = 0.5;
 const float thermicFactor = 0.35; 
+const float minSize = 3;
 
 // input
 layout(location = 0) in vec3 vs_in_position;
@@ -37,7 +38,7 @@ layout(location = 1) in vec3 vs_in_size_time_rand;
 // output
 out vec3 vs_out_position;
 out vec3 vs_out_size_time_rand;
-out float vs_out_depthviewspace;		
+out float vs_out_depthclipspace;		
 #define vs_out_size					vs_out_size_time_rand.x
 #define vs_out_remainingLifeTime	vs_out_size_time_rand.y
 #define vs_out_rand					vs_out_size_time_rand.z
@@ -66,7 +67,7 @@ void main()
 		vs_out_position = spawnareaMin + vec3(randhash(seed, spawnareaSpan.x), randhash(++seed, spawnareaSpan.y), randhash(++seed, spawnareaSpan.z));
 
 		vs_out_remainingLifeTime = lifeTimeMin + randhash(++seed, lifeTimeSpan);
-		vs_out_size = 0;
+		vs_out_size = minSize;
 		vs_out_rand = randhash(++seed, 2.0) - 1.0;
 	}
 	else
@@ -85,19 +86,18 @@ void main()
 
 	// depth output, culling
 	vec3 diag = (CameraRight + CameraUp) * vs_out_size;
-	vec3 uperRight = (ViewProjection * vec4(vs_out_position + diag, 1.0)).xyw;
+	vec4 uperRight = ViewProjection * vec4(vs_out_position + diag, 1.0);
 	vec2 lowerLeft = (ViewProjection * vec4(vs_out_position - diag, 1.0)).xy;
 	vec4 screenCorMinMax = vec4(uperRight.xy, lowerLeft.xy);
 	vec4 absScreenCorMinMax = abs(screenCorMinMax);
-	if(all(greaterThan(absScreenCorMinMax.xz, uperRight.zz)) ||
-	   all(greaterThan(absScreenCorMinMax.yw, uperRight.zz)))
+	if(all(greaterThan(absScreenCorMinMax.xz, uperRight.ww)) ||	// left/right outer
+		all(greaterThan(absScreenCorMinMax.yw, uperRight.ww)) || // up/bottom outer
+		abs(uperRight.z) > uperRight.w)	// before/after outer
 	{
-		vs_out_depthviewspace = 999999;
+		vs_out_depthclipspace = 999999;
 	}
 	else
 	{
-		vs_out_depthviewspace = (ViewProjection * vec4(vs_out_position, 1)).z;
-		if(vs_out_depthviewspace < 0.0)
-			vs_out_depthviewspace = 999999;
+		vs_out_depthclipspace = uperRight.z;
 	}
 }

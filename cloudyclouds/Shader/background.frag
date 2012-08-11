@@ -14,23 +14,14 @@ layout(std140) uniform View
 //uniform samplerCube cubeTexture;
 
 // constants
-const vec3 AdditonalSunColor = vec3(1.0, 0.98, 0.8)/2;
+const vec3 AdditonalSunColor = vec3(1.0, 0.98, 0.8)/3;
 const vec3 LowerHorizonColour = vec3(0.815, 1.141, 1.54)/2;
 const vec3 UpperHorizonColour = vec3(0.986, 1.689, 2.845)/2;
-const vec3 UpperSkyColour = vec3(0.16, 0.27, 0.43);
-const vec3 GroundColour = vec3(0.31, 0.41, 0.5);
+const vec3 UpperSkyColour = vec3(0.16, 0.27, 0.43)*0.8;
+const vec3 GroundColour = vec3(0.31, 0.41, 0.5)*0.8;
 const float LowerHorizonHeight = -0.4;
 const float UpperHorizonHeight = -0.1;
 const float SunAttenuation = 2;
-
-/*
-vec3 SkyColor = vec3(0.23, 0.38, 0.60);
-vec3 HorizonColor = vec3(0.77, 0.97, 1.0);
-vec3 SunColor = vec3(1.0, 0.98, 0.8)*4;
-float HorizonSharpness = 3;
-float SunFallOff = 0.2;
-float SunSharpness = 5.0;
-*/
 
 // input
 in vec2 vs_out_texcoord;

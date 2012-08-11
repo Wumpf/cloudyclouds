@@ -10,12 +10,12 @@ uniform vec3 CameraRight;
 uniform vec3 CameraUp;
 
 // constants
-const float alphaFadeOutFactor = 0.3;
-const float alphaFadeInFactor = 0.35;
+const float alphaFadeFactor = 0.3;
 const float transmittanceBoost = 0.3f;
 const float rotationSpeed = 0.05;
 const float pi = 3.141592653589793;
 const float depthDissortFactor = 0.5;
+const float minSize = 3;
 
 // input
 in vec3 vs_out_position[1];
@@ -49,7 +49,7 @@ void main()
 	   return;
 
 	// alpha
-	gs_out_Alpha = min(min(vs_out_size[0] * alphaFadeInFactor, vs_out_remainingLifeTime[0] * alphaFadeOutFactor), 1.0) * transmittanceBoost;
+	gs_out_Alpha = min(min(vs_out_size[0]-minSize, vs_out_remainingLifeTime[0]) * alphaFadeFactor, 1.0) * transmittanceBoost;
 	// size
 	gs_out_depthDissort = vs_out_size[0] * depthDissortFactor;
 	
