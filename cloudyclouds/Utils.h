@@ -29,6 +29,10 @@ template <class Value, class Interpolation> Value interpolateBilinear(const Valu
 template <class Value, class Interpolation> Value interpolateLinear(const Value& A, const Value& B, const Interpolation& i)
 {	return A + i * (B - A);	 }
 
+
+// please don't forget glDeleteTextures
+GLuint loadTextureWithMipMaps(const std::string& textureFilename);
+
 #ifndef BUFFER_OFFSET
 #define BUFFER_OFFSET(a) ((char*)NULL + (a))
 #endif

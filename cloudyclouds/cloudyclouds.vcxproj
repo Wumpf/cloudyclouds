@@ -91,13 +91,13 @@
     <ClCompile Include="CloudyClouds.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Matrix4.cpp" />
-    <ClCompile Include="PerlinNoiseGenerator.cpp" />
     <ClCompile Include="ScreenAlignedTriangle.cpp" />
     <ClCompile Include="ShaderObject.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Vector3.cpp" />
   </ItemGroup>
@@ -109,10 +109,10 @@
     <ClInclude Include="CloudyClouds.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="Matrix4.h" />
-    <ClInclude Include="PerlinNoiseGenerator.h" />
     <ClInclude Include="ScreenAlignedTriangle.h" />
     <ClInclude Include="ShaderObject.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Terrain.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Vector3.h" />
   </ItemGroup>
@@ -126,6 +126,8 @@
     <None Include="Shader\cloudRendering.frag" />
     <None Include="Shader\cloudRendering.geom" />
     <None Include="Shader\screenTri.vert" />
+    <None Include="Shader\terrain.frag" />
+    <None Include="Shader\terrain.vert" />
     <None Include="uniform buffer bindings.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

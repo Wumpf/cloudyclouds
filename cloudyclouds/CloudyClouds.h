@@ -38,4 +38,9 @@ private:
 	std::unique_ptr<class ScreenAlignedTriangle> screenAlignedTriangle;
 	// background
 	std::unique_ptr<class Background> background;
+	// terrain
+	std::unique_ptr<class Terrain> terrain;
+
+
+	Vector3 lightDirection;
 };

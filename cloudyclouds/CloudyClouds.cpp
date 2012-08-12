@@ -5,6 +5,7 @@
 #include "Camera.h"
 #include "ScreenAlignedTriangle.h"
 #include "Background.h"
+#include "Terrain.h"
 
 #include <iomanip>
 
@@ -18,6 +19,10 @@ int onClose()
 CloudyClouds::CloudyClouds() :
 	camera(new Camera())
 {
+	// light
+	lightDirection = Vector3(1, -1, 0);
+	lightDirection.normalize();
+
 	// some glfw properties
 	glfwOpenWindowHint(GLFW_WINDOW_NO_RESIZE, GL_TRUE);
 	glfwOpenWindowHint(GLFW_FSAA_SAMPLES, 0);
@@ -70,6 +75,9 @@ CloudyClouds::CloudyClouds() :
 
 	// init background rendering
 	background.reset(new Background(*screenAlignedTriangle.get()));
+
+	// terrain
+	terrain.reset(new Terrain(256, 30.0f, 17.0f, 20.0f, lightDirection));
 
 	// start position
 	camera->setPosition(Vector3(0,50,0));
@@ -162,13 +170,10 @@ bool CloudyClouds::display(float timeSinceLastFrame)
 
 	// clear scene
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
-	Vector3 lightDirection(1, -1, 0);
-	lightDirection.normalize();
 
-
-	background->display();
-	clouds->display(timeSinceLastFrame, inverseViewProjection, camera->getViewMatrix(), camera->getDirection(), camera->getPosition(), lightDirection);
+	//background->display();
+	terrain->Draw(-10.0f, lightDirection);
+	//clouds->display(timeSinceLastFrame, inverseViewProjection, camera->getViewMatrix(), camera->getDirection(), camera->getPosition(), lightDirection);
 
 	// next frame
 	glfwSwapBuffers();

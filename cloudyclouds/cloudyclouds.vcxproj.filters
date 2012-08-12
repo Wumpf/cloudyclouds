@@ -54,10 +54,10 @@
     <ClCompile Include="Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PerlinNoiseGenerator.cpp">
+    <ClCompile Include="..\dependencies\include\stb_image.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\dependencies\include\stb_image.c">
+    <ClCompile Include="Terrain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -95,10 +95,10 @@
     <ClInclude Include="Matrix4.h">
       <Filter>Math</Filter>
     </ClInclude>
-    <ClInclude Include="PerlinNoiseGenerator.h">
+    <ClInclude Include="..\dependencies\include\stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\dependencies\include\stb_image.h">
+    <ClInclude Include="Terrain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -129,6 +129,12 @@
       <Filter>Shader</Filter>
     </None>
     <None Include="Shader\cloudFOMBlur.frag">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\terrain.vert">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="Shader\terrain.frag">
       <Filter>Shader</Filter>
     </None>
   </ItemGroup>
