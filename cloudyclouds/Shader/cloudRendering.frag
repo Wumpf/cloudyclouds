@@ -49,8 +49,8 @@ void main()
 
 	// sphere position
 	vec3 worldPos = gs_out_worldPos - tex * CameraDir * gs_out_depthDissort;
-	//vec4 clipPos = ViewProjection*vec4(worldPos, 1.0);
-	//gl_FragDepth = (clipPos.z / clipPos.w + 1.0) / 2.0;
+	vec4 clipPos = ViewProjection*vec4(worldPos, 1.0);
+	gl_FragDepth = (clipPos.z / clipPos.w + 1.0) / 2.0;
 
 	// fade at camera
 	vec3 toViewer = worldPos - CameraPosition;

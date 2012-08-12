@@ -45,6 +45,8 @@ CloudyClouds::CloudyClouds() :
 	backBufferResolutionY = lpmi.rcMonitor.bottom;
 #endif
 	
+	glDepthFunc(GL_LEQUAL);
+
 	// open
 	if(glfwOpenWindow(backBufferResolutionX, backBufferResolutionY, 8, 8, 8, 0, 24, 0, GLFW_WINDOW) != GL_TRUE) // GLFW_FULLSCREEN
 		throw std::exception("ERROR: glfwOpenWindow() failed!\n");
@@ -163,11 +165,11 @@ bool CloudyClouds::display(float timeSinceLastFrame)
 	// clear scene
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-	Vector3 lightDirection(1, -1, 0);
+	Vector3 lightDirection(1, -0.6f, 0);
 	lightDirection.normalize();
 
 
-	//background->display(lightDirection, clouds->getLightViewProjection(), clouds->getLightDistancePlane_Norm(), clouds->getFOMTexture0(), clouds->getFOMTexture1(), clouds->getFOMSampler());
+	background->display(lightDirection, clouds->getLightViewProjection(), clouds->getLightDistancePlane_Norm(), clouds->getFOMTexture0(), clouds->getFOMTexture1(), clouds->getFOMSampler());
 	clouds->display(timeSinceLastFrame, inverseViewProjection, camera->getViewMatrix(), camera->getDirection(), camera->getPosition(), lightDirection);
 
 	// next frame

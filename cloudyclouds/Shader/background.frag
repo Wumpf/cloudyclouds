@@ -53,17 +53,17 @@ vec3 computeSkyColor(in vec3 ray)
 // ------------------------------------------------
 // TERRAIN
 // ------------------------------------------------
-const float terrainScale = 20;
-const float minTerrainHeight = -50;
+const float terrainScale = 35;
+const float minTerrainHeight = -65;
 const float maxTerrainHeight = minTerrainHeight+terrainScale;
 
 uniform sampler2D Heightmap;
-const float heightmapTiling = 0.003;
+const float heightmapTiling = 0.004;
 const float texelSize = 1.0/512.0;
 
 float getTerrainHeight(in vec2 pos, in float cameraDistance)
 {
-	float lod = min(9, cameraDistance*0.005);
+	float lod = min(9, cameraDistance*0.01);
 	return textureLod(Heightmap, pos*heightmapTiling, lod).x * terrainScale + minTerrainHeight;
 }
 
@@ -72,17 +72,17 @@ vec3 getTerrainNormal(in vec3 pos)
 	float lod = 0.0;
 	vec2 texcoord = pos.xz * heightmapTiling;
     vec3 n = vec3(textureLod(Heightmap, vec2(texcoord.x-texelSize, texcoord.y), lod).x - 
-						textureLod(Heightmap, vec2(texcoord.x+texelSize, texcoord.y), lod).x,
-                   texelSize*2,
+					textureLod(Heightmap, vec2(texcoord.x+texelSize, texcoord.y), lod).x,
+                   texelSize*2 + textureLod(Heightmap, pos.xz*0.8, 0.0).x * texelSize,	// hehe some fine detail
 				  textureLod(Heightmap, vec2(texcoord.x, texcoord.y-texelSize), lod).x - 
-						textureLod(Heightmap, vec2(texcoord.x, texcoord.y+texelSize), lod).x  );
+					textureLod(Heightmap, vec2(texcoord.x, texcoord.y+texelSize), lod).x  );
     return normalize(n);
 }
 
 // ------------------------------------------------
 // RAYMARCH CORE
 // ------------------------------------------------
-bool rayCast(in vec3 rayOrigin, in vec3 rayDirection, out vec3 intersectionPoint)
+bool rayCast(in vec3 rayOrigin, in vec3 rayDirection, out vec3 intersectionPoint, out float dist)
 {
 	if(rayDirection.y == 0)
 		return false;
@@ -93,12 +93,11 @@ bool rayCast(in vec3 rayOrigin, in vec3 rayDirection, out vec3 intersectionPoint
 	float lowerBound = (minTerrainHeight - rayOrigin.y) / rayDirection.y;
 	if(lowerBound < 0.0 && upperBound < 0.0)
 		return false;
-	float start = max(min(upperBound, lowerBound), 0.1);
+	float start = max(min(upperBound, lowerBound), 1);
 	float end   = min(max(upperBound, lowerBound), maxStep);
 
 	// go!
-	float stepLen = 0.1;
-	int stage = 0;
+	float stepLen = 20;
 	float lh = 0.0;
 	float ly = 0.0;
 	for(float t=start; t<end; t+=stepLen)
@@ -108,10 +107,11 @@ bool rayCast(in vec3 rayOrigin, in vec3 rayDirection, out vec3 intersectionPoint
 
         if(pos.y - h < 0)
 		{
-			intersectionPoint = rayOrigin + rayDirection * (t - stepLen + stepLen*(lh-ly)/(pos.y-ly-h+lh));
+			dist = (t - stepLen + stepLen*(lh-ly)/(pos.y-ly-h+lh));
+			intersectionPoint = rayOrigin + rayDirection * dist;
 			return true;
         }
-		stepLen = 0.01 * t;	// addaptive error
+		stepLen = 0.015 * t;	// addaptive error
 		lh = h;
 		ly = pos.y;
 	}
@@ -160,7 +160,45 @@ float FOMShadowing(in vec3 worldPos)
 	bvec.z /= 3;
 	shadowing += (dot(avec, _a) + dot(bvec, _b)) / twoPI;
 
-	return depth;//exp(-shadowing);
+	return exp(-shadowing);
+}
+
+
+// ------------------------------------------------
+// Coloring
+// ------------------------------------------------
+uniform sampler2D rockTexture;
+uniform sampler2D grassTexture;
+vec3 getTerrainColor(in vec3 normal, in vec3 pos)
+{
+	// COLORING
+	// blend between stone and snow by terrainelevation
+	const float RockGrasSmoothnes = 0.5;
+	const float SnowTransitionArea = 1.0 / 5.0;	// lower means more transition ;)
+	const float SnowElevationIndependance = 0.25;
+	const float SandTransitionArea = 1.0 / 3.0;	// attention! the dividend has to be added to SandHeight
+	const float SandElevationIndependance = 0.2;
+	const float SnowHeight = maxTerrainHeight-15;
+	const float SandHeight = minTerrainHeight+10;
+	const float TextureRepeat = 0.08;
+
+
+	vec2 texcoord = pos.xz * TextureRepeat;
+
+	float elevation = abs(dot(normal, vec3(0.0, 1.0, 0.0)));
+	float Grassnes = pow(elevation, RockGrasSmoothnes);
+		// blend grass & Rock
+	vec3 color = mix(texture(rockTexture, texcoord).rgb, texture(grassTexture, texcoord).rgb, Grassnes);	// jep "texture" is not optimal; will be called outside any of these nifty dynamic branches
+	// blend to snow
+	float RockGrasInfluence = Grassnes + SnowElevationIndependance;
+	float SnowTransition = clamp((pos.y - SnowHeight) * SnowTransitionArea * RockGrasInfluence, 0.0, 1.0);
+	color = mix(color, vec3(0.8, 0.8, 0.8), SnowTransition);
+	// blend to Sand
+	RockGrasInfluence = Grassnes + SandElevationIndependance;
+	float SandTransition = clamp((SandHeight - pos.y) * SandTransitionArea * RockGrasInfluence, 0.0, 1.0);
+	color = mix(color, vec3(0.6, 0.65, 0.1), SandTransition);
+
+	return color;
 }
 
 // ------------------------------------------------
@@ -181,28 +219,37 @@ void main()
 	
 	vec3 terrainPosition;
 	vec2 terrainDerivates;
+	float dist;
 	//int steps = 0;
-	if(rayCast(CameraPosition, rayDirection, terrainPosition))
+	if(rayCast(CameraPosition, rayDirection, terrainPosition, dist))
 	{
+
+		// LIGHTING
 		vec3 normal = getTerrainNormal(terrainPosition);
-
-		// shadow
 		vec3 null;
-		float lighting;
-		//if(!rayCast(terrainPosition + LightDirection*300, -LightDirection, null))
-			lighting = max(0, dot(normal, LightDirection));
-		//else
-		//	fragColor = vec4(1,0,1,1);
+		float lighting = max(0, dot(normal, LightDirection));
+		float distToShadowCaster;
+		if(rayCast(terrainPosition+LightDirection, LightDirection, null, distToShadowCaster))
+			lighting *= min(max(0.2, distToShadowCaster*0.01), 1.0);
+		lighting *= FOMShadowing(terrainPosition);
+		lighting += 0.4;
 
-		lighting = FOMShadowing(terrainPosition);
-		//lighting += 0.2;
 
-		fragColor.rgb = vec3(lighting,lighting,lighting);
+		fragColor.rgb = getTerrainColor(normal, terrainPosition) * lighting;
+
+
+		// FOGGING
+		// clever fog http://www.iquilezles.org/www/articles/fog/fog.htm
+		float fogAmount = min(1, 0.5 * exp(-CameraPosition.y  * 0.01) * (1.0 - exp( -dist*rayDirection.y* 0.01)) / rayDirection.y);
+		fragColor.rgb = mix(fragColor.rgb, computeSkyColor(rayDirection), fogAmount);
+
+		// DEPTH
+		vec4 clipPos = ViewProjection * vec4(terrainPosition, 1.0);
+		gl_FragDepth = (clipPos.z / clipPos.w + 1.0) / 2.0;
 	}
 	else
+	{
 		fragColor.rgb = computeSkyColor(rayDirection);
-
-		// Write Depth?
-
-	//fragColor.rgb = vec3(steps * 0.05);
+		gl_FragDepth = 1.0;
+	}
 }

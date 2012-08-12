@@ -17,5 +17,7 @@ private:
 	std::unique_ptr<ShaderObject> backgroundShader;
 	GLuint heightmapTexture;
 	GLuint samplerHeightmap;
+	GLuint rockTexture;
+	GLuint grassTexture;
 };
 

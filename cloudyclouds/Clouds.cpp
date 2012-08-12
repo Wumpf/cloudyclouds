@@ -12,7 +12,7 @@
 #include <stb_image.h>
 
 const char* Clouds::transformFeedbackVaryings[] = { "vs_out_position", "vs_out_size_time_rand", "vs_out_depthclipspace" };
-const unsigned int Clouds::maxNumCloudParticles = 10000;// 16384;
+const unsigned int Clouds::maxNumCloudParticles = 15000;// 16384;
 const unsigned int Clouds::fourierOpacityMapSize = 1024;
 //const unsigned int Clouds::noiseTextureSize = 512;
 
@@ -423,6 +423,8 @@ void Clouds::renderClouds(const Vector3& lightDir, const Matrix4& viewMatrix)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cloudParticleRendering);
 	glBindVertexArray(vao_cloudParticleBuffer_Read);
 
+	glEnable(GL_DEPTH_TEST); 
+
 	glDrawElements(GL_POINTS, numParticlesRender, GL_UNSIGNED_SHORT, 0);
 
 	// reset stuff
@@ -443,7 +445,8 @@ void Clouds::renderClouds(const Vector3& lightDir, const Matrix4& viewMatrix)
 void Clouds::display(float timeSinceLastFrame, const Matrix4& inverseViewProjection, const Matrix4& view,
 						const Vector3& cameraDirection, const Vector3& cameraPosition, const Vector3& lightDir)
 {
-	glDisable(GL_DEPTH_TEST); 
+	glDisable(GL_DEPTH_TEST);
+	glDepthMask(GL_FALSE);
 
 	// through all the following passes the "read" buffer will be read
 
