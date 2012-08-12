@@ -30,6 +30,9 @@ void Camera::update(float timeSinceLastFrame)
 	float left	  = (glfwGetKey(GLFW_KEY_LEFT) == GLFW_PRESS || glfwGetKey('a') == GLFW_PRESS) ? 1.0f : 0.0f;
 	float right	  = (glfwGetKey(GLFW_KEY_RIGHT) == GLFW_PRESS || glfwGetKey('d') == GLFW_PRESS) ? 1.0f : 0.0f;
 
+	if(glfwGetKey(GLFW_KEY_RCTRL))
+		forward *= 5.0f;
+
 	cameraDirection = Vector3(sinf(rotX) * cosf(rotY), sinf(rotY), cosf(rotX) * cosf(rotY));
 	Vector3 cameraLeft = Vector3::cross(cameraDirection, Vector3(0,1,0));
 

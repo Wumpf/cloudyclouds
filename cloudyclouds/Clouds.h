@@ -17,6 +17,12 @@ public:
 	void display(float timeSinceLastFrame, const Matrix4& inverseViewProjection, const Matrix4& view,
 				const Vector3& cameraDirection, const Vector3& cameraPosition, const Vector3& lightDir);
 
+	float* getLightDistancePlane_Norm() { return lightDistancePlane_Norm; }
+	Matrix4& getLightViewProjection() { return lightViewProjection; }
+	GLuint getFOMTexture0() { return fourierOpacityMap_Textures[0][0]; }
+	GLuint getFOMTexture1() { return fourierOpacityMap_Textures[0][1]; }
+	GLuint getFOMSampler() { return linearSampler_noMipMaps; }
+
 private:
 	void shaderInit();
 	void fboInit();

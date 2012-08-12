@@ -167,7 +167,7 @@ bool CloudyClouds::display(float timeSinceLastFrame)
 	lightDirection.normalize();
 
 
-	background->display();
+	//background->display(lightDirection, clouds->getLightViewProjection(), clouds->getLightDistancePlane_Norm(), clouds->getFOMTexture0(), clouds->getFOMTexture1(), clouds->getFOMSampler());
 	clouds->display(timeSinceLastFrame, inverseViewProjection, camera->getViewMatrix(), camera->getDirection(), camera->getPosition(), lightDirection);
 
 	// next frame
