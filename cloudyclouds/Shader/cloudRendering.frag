@@ -24,9 +24,9 @@ layout(std140) uniform View
 
 // constants
 const float twoPI = 6.28318531;
-const vec3 ColorDark = vec3(0.34, 0.43, 0.51)*1.2;
-const vec3 ColorLight = vec3(0.8, 0.8, 0.8)*1.1;
-const vec3 ColorSpecular = vec3(0.95, 0.945, 0.94)*0.7;
+const vec3 ColorDark = vec3(0.34, 0.43, 0.51)*0.85;
+const vec3 ColorLight = vec3(0.83, 0.83, 0.81)*1.15;
+const vec3 ColorSpecular = vec3(0.95, 0.91, 0.84)* 0.5;
 const float farPlaneDistSq = 40000.0;
 
 // input
@@ -132,7 +132,7 @@ void main()
 	vec3 halfVector_viewspace = normalize(LightDirection_viewspace + viewDir_viewspace);
   	float specularAmount = dot(normal_viewspace, halfVector_viewspace); //max(dot(refl, viewDir_viewspace), 0);
 	specularAmount *= specularAmount * specularAmount * specularAmount;	// spec exp is 3
-	specularAmount *= alpha;	// less spherical feeling by specularmapping per alpha
+	specularAmount *= alpha+0.5;	// less spherical feeling by specularmapping per alpha
 
 	// schlick fresnel - formula by http://filmicgames.com/archives/557
 	float base = 1.0 - dot(LightDirection_viewspace, halfVector_viewspace);
@@ -140,11 +140,12 @@ void main()
 	float fresnel = exponential + 0.1 * (1.0 - exponential);
 	specularAmount *= fresnel;
 	
+	specularAmount = min(specularAmount, 1.0);
 
 	// final color
 	fragColor.a = alpha;
-	float NDotL = dot(LightDirection_viewspace, normal_viewspace);
-	float lightAmount = min(1.0, shadowing + (shadowing + 0.4) * NDotL * fragColor.a);	// here also retouch spherical terms with alpha
+	float NDotL = max(0.0, dot(LightDirection_viewspace, normal_viewspace));
+	float lightAmount = min(1.0, shadowing + (shadowing*0.2 + 0.2) * NDotL * fragColor.a);	// here also retouch spherical terms with alpha
 	fragColor.rgb = mix(ColorDark, ColorLight, lightAmount) + specularAmount*ColorSpecular;	// lerping between colors is important - clouds don't becom simply dark, they become dark blue!
 
 	// visualize depth
