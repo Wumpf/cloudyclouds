@@ -128,6 +128,8 @@ void CloudyClouds::mainLoop()
 	}
 }
 
+bool terrainKeyPressed = false;
+
 bool CloudyClouds::update(float timeSinceLastFrame)
 {
 	glfwPollEvents();
@@ -137,6 +139,13 @@ bool CloudyClouds::update(float timeSinceLastFrame)
 	std::stringstream stringstream;
 	stringstream << "CloudyClouds " << "FPS: " << std::setprecision(4) << 1.0f / timeSinceLastFrame << " ms: " << timeSinceLastFrame* 1000.0f;
 	glfwSetWindowTitle(stringstream.str().c_str());
+
+	if(glfwGetKey(GLFW_KEY_ESC))
+		return false;
+
+	if(glfwGetKey(GLFW_KEY_ENTER) == GLFW_PRESS && !terrainKeyPressed)
+		background->toggleRayMarchingTerrain();
+	terrainKeyPressed = glfwGetKey(GLFW_KEY_ENTER) == GLFW_PRESS;
 
 	return true;
 }

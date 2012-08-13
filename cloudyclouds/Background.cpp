@@ -26,7 +26,8 @@ GLuint loadTexture(const std::string& name)
 
 Background::Background(ScreenAlignedTriangle& screenTriangle) :
 	screenTriangle(screenTriangle),
-	backgroundShader(new ShaderObject("shader\\screenTri.vert", "shader\\background.frag"))
+	backgroundShader(new ShaderObject("shader\\screenTri.vert", "shader\\background.frag")),
+	terrainOnOff(true)
 {
 	backgroundShader->useProgram();
 	GLuint blockIndex = glGetUniformBlockIndex(backgroundShader->getProgram(), "View"); 
@@ -71,6 +72,9 @@ void Background::display(const Vector3& lightDirection, Matrix4& lightViewProjec
 
 	glUniformMatrix4fv(glGetUniformLocation(backgroundShader->getProgram(), "LightViewProjection"), 1, false, lightViewProjection);
 	glUniform4fv(glGetUniformLocation(backgroundShader->getProgram(), "LightDistancePlane_norm"), 1, lightDistancePlane_norm);
+
+	glUniform1i(glGetUniformLocation(backgroundShader->getProgram(), "terrainOnOff"), terrainOnOff ? 1 : 0);
+
 
 	glBindSampler(0, samplerHeightmap);
 	glBindSampler(1, FOMSamplerObject);

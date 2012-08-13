@@ -208,6 +208,7 @@ vec3 getTerrainColor(in vec3 normal, in vec3 pos)
 // ------------------------------------------------
 // MAIN
 // ------------------------------------------------
+uniform int terrainOnOff;
 void main()
 {	
 	// "picking" - compute raydirection
@@ -221,34 +222,42 @@ void main()
 	// Color
 	fragColor.a = 0.0;
 	
-	vec3 terrainPosition;
-	vec2 terrainDerivates;
-	float dist;
-	//int steps = 0;
-	if(rayCast(CameraPosition, rayDirection, terrainPosition, dist))
+	if(terrainOnOff == 1)
 	{
+		vec3 terrainPosition;
+		vec2 terrainDerivates;
+		float dist;
+		//int steps = 0;
+		if(rayCast(CameraPosition, rayDirection, terrainPosition, dist))
+		{
 
-		// LIGHTING
-		vec3 normal = getTerrainNormal(terrainPosition);
-		vec3 null;
-		float lighting = max(0, dot(normal, LightDirection));
-		float distToShadowCaster;
-		if(rayCast(terrainPosition+LightDirection, LightDirection, null, distToShadowCaster))
-			lighting *= min(max(0.2, distToShadowCaster*0.01), 1.0);
-		lighting += FOMShadowing(terrainPosition);	// this is ambient!
+			// LIGHTING
+			vec3 normal = getTerrainNormal(terrainPosition);
+			vec3 null;
+			float lighting = max(0, dot(normal, LightDirection));
+			float distToShadowCaster;
+			if(rayCast(terrainPosition+LightDirection, LightDirection, null, distToShadowCaster))
+				lighting *= min(max(0.3, distToShadowCaster*0.01), 1.0);
+			lighting += FOMShadowing(terrainPosition);	// this is ambient!
+
+			fragColor.rgb = getTerrainColor(normal, terrainPosition) * lighting;
 
 
-		fragColor.rgb = getTerrainColor(normal, terrainPosition) * lighting;
+			// FOGGING
+			// clever fog http://www.iquilezles.org/www/articles/fog/fog.htm
+			float fogAmount = min(1, 0.5 * exp(-CameraPosition.y  * 0.01) * (1.0 - exp( -dist*rayDirection.y* 0.01)) / rayDirection.y);
+			fragColor.rgb = mix(fragColor.rgb, computeSkyColor(rayDirection), fogAmount);
 
+			// DEPTH
+			vec4 clipPos = ViewProjection * vec4(terrainPosition, 1.0);
+			gl_FragDepth = (clipPos.z / clipPos.w + 1.0) / 2.0;
+		}
+		else
+		{
+			fragColor.rgb = computeSkyColor(rayDirection);
+			gl_FragDepth = 1.0;
+		}
 
-		// FOGGING
-		// clever fog http://www.iquilezles.org/www/articles/fog/fog.htm
-		float fogAmount = min(1, 0.5 * exp(-CameraPosition.y  * 0.01) * (1.0 - exp( -dist*rayDirection.y* 0.01)) / rayDirection.y);
-		fragColor.rgb = mix(fragColor.rgb, computeSkyColor(rayDirection), fogAmount);
-
-		// DEPTH
-		vec4 clipPos = ViewProjection * vec4(terrainPosition, 1.0);
-		gl_FragDepth = (clipPos.z / clipPos.w + 1.0) / 2.0;
 	}
 	else
 	{

@@ -12,6 +12,8 @@ public:
 
 	void display(const class Vector3& lightDirection, class Matrix4& LightViewProjection, float* lightDistancePlane_norm, GLuint FOMSampler0, GLuint FOMSampler1, GLuint FOMSamplerObject);
 
+	void toggleRayMarchingTerrain() { terrainOnOff = !terrainOnOff; }
+
 private:
 	ScreenAlignedTriangle& screenTriangle;
 	std::unique_ptr<ShaderObject> backgroundShader;
@@ -20,5 +22,6 @@ private:
 	GLuint rockTexture;
 	GLuint sandTexture;
 	GLuint grassTexture;
+	bool terrainOnOff;
 };
 
