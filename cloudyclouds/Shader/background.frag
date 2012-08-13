@@ -93,25 +93,28 @@ bool rayCast(in vec3 rayOrigin, in vec3 rayDirection, out vec3 intersectionPoint
 	float lowerBound = (minTerrainHeight - rayOrigin.y) / rayDirection.y;
 	if(lowerBound < 0.0 && upperBound < 0.0)
 		return false;
-	float start = max(min(upperBound, lowerBound), 1);
+	float start = max(min(upperBound, lowerBound), 5);
 	float end   = min(max(upperBound, lowerBound), maxStep);
 
 	// go!
-	float stepLen = 20;
+//	float stepLen = 20;
 	float lh = 0.0;
 	float ly = 0.0;
-	for(float t=start; t<end; t+=stepLen)
+	float lt = start;
+	for(float t=start; t<end; t*=1.011)
 	{
 		vec3 pos = rayOrigin + rayDirection * t;
         float h = getTerrainHeight(pos.xz, t);
 
         if(pos.y - h < 0)
 		{
-			dist = (t - stepLen + stepLen*(lh-ly)/(pos.y-ly-h+lh));
+			float laststep = t - lt;
+			dist = (t - laststep + laststep*(lh-ly)/(pos.y-ly-h+lh));
 			intersectionPoint = rayOrigin + rayDirection * dist;
 			return true;
         }
-		stepLen = 0.015 * t;	// addaptive error
+		lt = t;
+	//	stepLen = 0.012 * t;	// addaptive error
 		lh = h;
 		ly = pos.y;
 	}
@@ -169,6 +172,7 @@ float FOMShadowing(in vec3 worldPos)
 // ------------------------------------------------
 uniform sampler2D rockTexture;
 uniform sampler2D grassTexture;
+uniform sampler2D sandTexture;
 vec3 getTerrainColor(in vec3 normal, in vec3 pos)
 {
 	// COLORING
@@ -180,7 +184,7 @@ vec3 getTerrainColor(in vec3 normal, in vec3 pos)
 	const float SandElevationIndependance = 0.2;
 	const float SnowHeight = maxTerrainHeight-15;
 	const float SandHeight = minTerrainHeight+10;
-	const float TextureRepeat = 0.08;
+	const float TextureRepeat = 0.1;
 
 
 	vec2 texcoord = pos.xz * TextureRepeat;
@@ -196,7 +200,7 @@ vec3 getTerrainColor(in vec3 normal, in vec3 pos)
 	// blend to Sand
 	RockGrasInfluence = Grassnes + SandElevationIndependance;
 	float SandTransition = clamp((SandHeight - pos.y) * SandTransitionArea * RockGrasInfluence, 0.0, 1.0);
-	color = mix(color, vec3(0.6, 0.65, 0.1), SandTransition);
+	color = mix(color, texture(sandTexture, texcoord).rgb, SandTransition);
 
 	return color;
 }
@@ -231,8 +235,7 @@ void main()
 		float distToShadowCaster;
 		if(rayCast(terrainPosition+LightDirection, LightDirection, null, distToShadowCaster))
 			lighting *= min(max(0.2, distToShadowCaster*0.01), 1.0);
-		lighting *= FOMShadowing(terrainPosition);
-		lighting += 0.4;
+		lighting += FOMShadowing(terrainPosition);	// this is ambient!
 
 
 		fragColor.rgb = getTerrainColor(normal, terrainPosition) * lighting;

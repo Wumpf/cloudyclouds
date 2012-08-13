@@ -18,6 +18,7 @@ private:
 	GLuint heightmapTexture;
 	GLuint samplerHeightmap;
 	GLuint rockTexture;
+	GLuint sandTexture;
 	GLuint grassTexture;
 };
 

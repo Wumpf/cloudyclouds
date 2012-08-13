@@ -11,7 +11,7 @@ GLuint loadTexture(const std::string& name)
 	int TexSizeX, TexSizeY;
 	stbi_uc* TextureData = stbi_load(name.c_str(), &TexSizeX, &TexSizeY, NULL, 4);
 	if(!TextureData)
-		Log::get() << "Error while loading texture heightmap.png\n";
+		Log::get() << "Error while loading texture " << name << "\n";
 
 	GLuint texture;
 	glGenTextures(1, &texture);
@@ -36,12 +36,14 @@ Background::Background(ScreenAlignedTriangle& screenTriangle) :
 	glUniform1i(glGetUniformLocation(backgroundShader->getProgram(), "FOMSampler1"), 2);
 	glUniform1i(glGetUniformLocation(backgroundShader->getProgram(), "rockTexture"), 3);
 	glUniform1i(glGetUniformLocation(backgroundShader->getProgram(), "grassTexture"), 4);
+	glUniform1i(glGetUniformLocation(backgroundShader->getProgram(), "sandTexture"), 5);
 	glUseProgram(0);
 
 
 	heightmapTexture = loadTexture("heightmap.png");
 	rockTexture = loadTexture("rock.bmp");
 	grassTexture = loadTexture("grass.bmp");
+	sandTexture = loadTexture("sand.jpg");
 
 	glGenSamplers(1, &samplerHeightmap);
 	glSamplerParameteri(samplerHeightmap, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -54,6 +56,7 @@ Background::~Background()
 {
 	glDeleteTextures(1, &heightmapTexture);
 	glDeleteTextures(1, &rockTexture);
+	glDeleteTextures(1, &sandTexture);
 	glDeleteSamplers(1, &samplerHeightmap);
 }
 
@@ -87,6 +90,8 @@ void Background::display(const Vector3& lightDirection, Matrix4& lightViewProjec
 	glBindTexture(GL_TEXTURE_2D, rockTexture);
 	glActiveTexture(GL_TEXTURE4);
 	glBindTexture(GL_TEXTURE_2D, grassTexture);
+	glActiveTexture(GL_TEXTURE5);
+	glBindTexture(GL_TEXTURE_2D, sandTexture);
 
 	screenTriangle.display();
 
